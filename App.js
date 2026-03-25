@@ -1,20 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {Text} from 'react-native';
+import LoginScreen from './src/screens/LoginScreen';
+import {useFonts} from 'expo-font';
 
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  const [loaded]=useFonts({
+    ManropeRegular: require('./src/assests/fonts/Manrope-Regular.ttf'),
+    ManropeMedium: require('./src/assests/fonts/Manrope-Medium.ttf'),
+    ManropeSemiBold: require('./src/assests/fonts/Manrope-SemiBold.ttf'),
+    ManropeBold: require('./src/assests/fonts/Manrope-Bold.ttf'),
+  });
+  if(!loaded){
+    return <Text>Loading...</Text>
+  }
+  return <LoginScreen/>;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
