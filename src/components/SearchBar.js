@@ -4,17 +4,17 @@ import {View,Image,Text,TextInput, TouchableOpacity,} from 'react-native';
 export default function SearchBar () {
   return (
     <View
-        style={{height:48,width:358,marginTop:16,flexDirection:'row',marginHorizontal:16}}
+        style={{height:48,marginTop:16,flexDirection:'row',paddingHorizontal:16,alignItems:'center',justifyContent:'space-between'}}
     >
         <View
-            style={{flex:1,backgroundColor:'#FFFFFF',height:48,flexDirection:'row',borderRadius:6,width:300,alignItems:'center',paddingLeft:10,borderColor:'#CCCCCC',borderWidth:1}}
+            style={{flex:1,backgroundColor:'#FFFFFF',height:48,flexDirection:'row',borderRadius:6,alignItems:'center',paddingHorizontal:10,borderColor:'#CCCCCC',borderWidth:1,marginRight:10}}
         >
             <Image source={require('../assests/SearchIcon.png')}
                 style={{width:16,height:16,}}
             />
             <TextInput
                 placeholder='Search...'
-                style={{flex:1,color:'4D4D4D',fontFamily:'ManropeRegular',fontSize:14,marginLeft:10}}
+                style={{flex:1,color:'#4D4D4D',fontFamily:'ManropeRegular',fontSize:14,marginLeft:10}}
 
             />
         </View>

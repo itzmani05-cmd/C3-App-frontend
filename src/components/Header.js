@@ -4,7 +4,7 @@ import {View, Text, Image,TouchableOpacity} from 'react-native';
 const Header=({title, showBack})=>{
     return (
         <View 
-            style={{height:66,flexDirection:'row',alignItems:'center',justifyContent:'center',backgroundColor:'#FFFFFF',borderColor:'#E6E6E6',padding:20}}
+            style={{height:80,flexDirection:'row',alignItems:'center',justifyContent:'center',backgroundColor:'#FFFFFF',borderColor:'#E6E6E6',padding:10}}
         >
             {showBack?(
                 <TouchableOpacity style={{position:'absolute',left:20}}>
