@@ -6,7 +6,7 @@ import {Text} from 'react-native';
 // import ResetPassword from './src/screens/ResetPasswordScreen';
 
 import {useFonts} from 'expo-font';
-import MyCourseOverview from './src/screens/MyCertificates';
+import MyCourseOverview from './src/screens/PaymentHistory';
 
 // import Onboarding1 from './src/screens/Onboarding1';
 
