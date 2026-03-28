@@ -5,10 +5,8 @@ import {Text} from 'react-native';
 // import VerifyYourAccount from './src/screens/VerifyYourAccount';
 // import ResetPassword from './src/screens/ResetPasswordScreen';
 
-// import TabNavigation from './src/navigation/TabNavigation';
-// import {NavigationContainer} from '@react-navigation/native';
 import {useFonts} from 'expo-font';
-import PaymentNotification from './src/screens/PaymentScreen';
+import MyCourseOverview from './src/screens/MyCertificates';
 
 // import Onboarding1 from './src/screens/Onboarding1';
 
@@ -24,11 +22,8 @@ export default function App() {
   if(!loaded){
     return <Text>Loading...</Text>
   }
-  return (
-    <PaymentNotification/>
-    // <NavigationContainer>
-    //   <TabNavigation />
-    // </NavigationContainer>
-  )
+  return(
+    <MyCourseOverview />
+  ) 
 }
 
