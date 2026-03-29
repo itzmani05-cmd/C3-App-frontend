@@ -10,7 +10,7 @@ export default function Onboarding3 ({navigation}) {
             style={{flex:1,width:'100%',height:'100%'}}
             resizeMode='cover'
         >
-            <ProgressBar step={1}/>
+            <ProgressBar step={3}/>
             <View style={{flex:1,backgroundColor:'rgba(0,0,0,0.5)'}}>
                 <LinearGradient 
                     style={{flex:1,justifyContent:'flex-end'}}
@@ -31,7 +31,7 @@ export default function Onboarding3 ({navigation}) {
                         </View>
                         <View>
                             <TouchableOpacity
-                                onPress={()=>console.log('login')}
+                                onPress={()=>navigation.replace('Login')}
                                 style={{backgroundColor:'#4F46E5',height:52,borderRadius:6,alignItems:'center',justifyContent:'center',marginTop:20,width:'100%'}}
                             >
                                 <Text style={{fontFamily:'ManropeMedium',fontSize:16,color:'#FDFDFD',}}>

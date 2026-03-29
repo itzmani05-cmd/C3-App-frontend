@@ -1,14 +1,14 @@
 import React,{useState} from 'react'
 import {View, Image,Text, TextInput, TouchableOpacity} from 'react-native';
 
-export default function LoginScreen(){
+export default function LoginScreen({navigation}){
     const [showPassword, setShowPassword]=useState(false);
     const [remember, setRemember]=useState(false);
   return (
     <View
-        style={{padding:20,justifyContent:'center',backgroundColor:'#F5F5F5',flex:1}}
+        style={{paddingHorizontal:20,paddingTop:60,backgroundColor:'#F5F5F5',flex:1,}}
     >
-        <View style={{alignItems:'center',marginBottom:30}}>
+        <View style={{width: '100%',height: 245,alignItems: 'center',justifyContent: 'center',marginBottom: 30}}>
             <Image source={require('../assests/logo.png')} 
                 style={{width:244,height:48, resizeMode:'contain',color:'#4F46E5'}}
             />
@@ -28,7 +28,7 @@ export default function LoginScreen(){
                 alignItems:'center',
                 borderWidth:1,
                 borderColor:'#ddd',
-                borderRadius:0,
+                borderRadius:6,
                 height:50,
                 paddingRight:16,
                 paddingLeft:16,
@@ -53,7 +53,7 @@ export default function LoginScreen(){
                 alignItems:'center',
                 borderWidth:1,
                 borderColor:'#ddd',
-                borderRadius:0,
+                borderRadius:6,
                 height:50,
                 paddingRight:16,
                 paddingLeft:16,
@@ -127,7 +127,9 @@ export default function LoginScreen(){
             style={{flexDirection:'row',justifyContent:'center',marginTop:20}}
         >
             <Text style={{fontSize:14,color:'#000', fontFamily:'ManropeRegular'}}>Don't have an account? </Text>
-            <Text style={{color:'#4F46E5',fontSize:14,color:'#4F46E5',fontFamily:'ManropeSemiBold' }}>{' '}Sign up</Text>
+            <TouchableOpacity onPress={()=>navigation.navigate('SIgnUp')}>
+                <Text style={{color:'#4F46E5',fontSize:14,color:'#4F46E5',fontFamily:'ManropeSemiBold' }}>{' '}Sign up</Text>
+            </TouchableOpacity>
         </View>
     </View>
   )

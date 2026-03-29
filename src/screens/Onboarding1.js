@@ -34,8 +34,8 @@ export default function Onboarding1({navigation}) {
                             </Text>
                         </View>
                        
-                         <BottomNav onSkip={()=>console.log("Skip1")}
-                            onNext={()=>console.log('next1')}
+                         <BottomNav onSkip={()=>navigation.replace("Login")}
+                            onNext={()=>navigation.navigate("Onboarding2")}
                         />
                         
                     </View>

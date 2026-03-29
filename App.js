@@ -1,14 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
 import {Text} from 'react-native';
-// import LoginScreen from './src/screens/LoginScreen';
-// import SignUpScreen from './src/screens/SIgnUpScreen';
-// import VerifyYourAccount from './src/screens/VerifyYourAccount';
-// import ResetPassword from './src/screens/ResetPasswordScreen';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import {useFonts} from 'expo-font';
-import MyCourseOverview from './src/screens/PaymentHistory';
 
-// import Onboarding1 from './src/screens/Onboarding1';
+import Onboarding1 from './src/screens/Onboarding1';
+import Onboarding2 from './src/screens/Onboarding2';
+import Onboarding3 from './src/screens/Onboarding3';
+import LoginScreen from './src/screens/LoginScreen';
+import SIgnUpScreen from './src/screens/SIgnUpScreen';
+
+const Stack=createNativeStackNavigator();
 
 export default function App() {
   const [loaded]=useFonts({
@@ -23,7 +26,15 @@ export default function App() {
     return <Text>Loading...</Text>
   }
   return(
-    <MyCourseOverview />
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Onboarding1" screenOptions={{headerShown:false}}>
+        <Stack.Screen name='Onboarding1' component={Onboarding1}/>
+        <Stack.Screen name='Onboarding2' component={Onboarding2}/>
+        <Stack.Screen name='Onboarding3' component={Onboarding3}/>
+        <Stack.Screen name='Login' component={LoginScreen}/>
+        <Stack.Screen name='SIgnUp' component={SIgnUpScreen}/>
+      </Stack.Navigator>
+    </NavigationContainer>
   ) 
 }
 

@@ -6,9 +6,9 @@ export default function SIgnUpScreen () {
     const [showPassword, setShowPassword]=useState(false);
   return (
     <View style={{flex:1,padding:20,justifyContent:'center',backgroundColor:'#F5F5F5'}}>
-        <View style={{alignItems:'center',marginBottom:30}}>
+        <View style={{width:'100%',height:183,alignItems:'center',justifyContent:'center',marginBottom:30}}>
             <Image source={require('../assests/logo.png')} 
-                style={{width:244,height:89,resizeMode:'contain'}} 
+                style={{width:244,height:66.25,resizeMode:'contain'}} 
             />
             <Text style={{color:'#1A1A1A',fontFamily:'ManropeRegular',fontSize:12,marginTop:5}}>
                 Learn Skills. Grow Daily.
@@ -172,7 +172,9 @@ export default function SIgnUpScreen () {
             style={{flexDirection:'row',justifyContent:'center',marginTop:20}}
         >
             <Text style={{fontSize:14,color:'#000', fontFamily:'ManropeRegular'}}>Already have an account? </Text>
-            <Text style={{color:'#4F46E5',fontSize:14,color:'#4F46E5',fontFamily:'ManropeSemiBold' }}>{' '}Login</Text>
+            <TouchableOpacity onPress={()=>navigation.navigate('Login')}>
+                <Text style={{color:'#4F46E5',fontSize:14,color:'#4F46E5',fontFamily:'ManropeSemiBold' }}>{' '}Login</Text>
+            </TouchableOpacity>
         </View>
     </View>
   )
