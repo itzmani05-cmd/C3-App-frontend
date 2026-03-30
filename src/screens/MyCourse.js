@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
 import {View, Text, Image, TouchableOpacity, ScrollView} from 'react-native';
 import Header from '../components/Header';
-import {courses} from '../data/ExploreData';
+import {learningCourses} from '../data/courses';
 import {CourseCard} from '../components/CourseCard';
 
-export default function MyCourse(){
+export default function MyCourse({navigation}){
     const [activeTab,setActiveTab]=useState('All');
 
-    const filteredCourses=activeTab==="All"?courses:courses.filter((c)=>c.status===activeTab);
+    const filteredCourses=activeTab==="All"?learningCourses:learningCourses.filter((c)=>c.status===activeTab);
     return(
         <View style={{flex:1}}>
             <Header 
@@ -16,8 +16,8 @@ export default function MyCourse(){
             />
             <View style={{flexDirection:'row',padding:16}}>
                 {[
-                    { label: 'All', count:0},
-                    { label: 'In Progress', count: 0 },
+                    { label: 'All', count:5},
+                    { label: 'In Progress', count: 5 },
                     { label: 'Completed', count: 0},
                 ].map((tab)=>{
                     const isActive=activeTab===tab.label;
@@ -65,7 +65,7 @@ export default function MyCourse(){
             ):(
                 <ScrollView>
                     {filteredCourses.map((item,index)=>(
-                        <CourseCard key={index} item={item} />
+                        <CourseCard key={index} item={item} navigation={navigation}/>
                     ))}
                 </ScrollView>
             )}

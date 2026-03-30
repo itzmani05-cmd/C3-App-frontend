@@ -8,7 +8,7 @@ export default function MyLearning  () {
   return (
     <View style={{flex:1,backgroundColor:'#FBFBFB'}}>
       <Header
-            title="My Wishlist"
+            title="My Learning"
             showBack={true}
         />
       {learningCourses.length===0?(

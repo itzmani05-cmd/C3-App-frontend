@@ -17,7 +17,7 @@ import ServiceIcon from '../assests/ServiceIcon.png';
 import downloadIcon from "../assests/DownloadIcon.png";
 import wifiIcon from "../assests/WifiIcon.png";
 
-export default function SettingScreen() {
+export default function SettingScreen({navigation}) {
     const [pushNotification, setPushNotification]=useState(true);
     const [emailNotification, setEmailNotification]= useState(true);
     const [courseUpdates, setCourseUpdates]= useState(true);
@@ -46,91 +46,92 @@ export default function SettingScreen() {
                     onPress={() => {}}
                     isLast
                 />
-                </Section>
+            </Section>
 
                 <Section title="Notifications">
-                <Row
-                    icon={bellIcon}
-                    title="Push Notifications"
-                    subtitle="Receive push notifications"
-                    isSwitch
-                    value={pushNotification}
-                    onValueChange={setPushNotification}
-                />
-                <Row
-                    icon={mailIcon}
-                    title="Email Notifications"
-                    subtitle="Receive email updates"
-                    isSwitch
-                    value={emailNotification}
-                    onValueChange={setEmailNotification}
-                />
-                <Row
-                    icon={bookIcon}
-                    title="Course Updates"
-                    subtitle="New lessons & announcements"
-                    isSwitch
-                    value={courseUpdates}
-                    onValueChange={setCourseUpdates}
-                    isLast
-                />
+                    <Row
+                       
+                        icon={bellIcon}
+                        title="Push Notifications"
+                        subtitle="Receive push notifications"
+                        isSwitch
+                        value={pushNotification}
+                        onValueChange={setPushNotification}
+                    />
+                    <Row
+                        icon={mailIcon}
+                        title="Email Notifications"
+                        subtitle="Receive email updates"
+                        isSwitch
+                        value={emailNotification}
+                        onValueChange={setEmailNotification}
+                    />
+                    <Row
+                        icon={bookIcon}
+                        title="Course Updates"
+                        subtitle="New lessons & announcements"
+                        isSwitch
+                        value={courseUpdates}
+                        onValueChange={setCourseUpdates}
+                        isLast
+                    />
                 </Section>
 
                 <Section title="Preferences">
-                <Row
-                    icon={moonIcon}
-                    title="Dark Mode"
-                    subtitle="Enable dark theme"
-                    isSwitch
-                    value={darkMode}
-                    onValueChange={setDarkMode}
-                />
-                <Row
-                    icon={langIcon}
-                    title="Language"
-                    subtitle="English"
-                    onPress={() => {}}
-                    isLast
-                />
+                    <Row
+                        icon={moonIcon}
+                        title="Dark Mode"
+                        subtitle="Enable dark theme"
+                        isSwitch
+                        value={darkMode}
+                        onValueChange={setDarkMode}
+                    />
+                    <Row
+                        icon={langIcon}
+                        title="Language"
+                        subtitle="English"
+                        onPress={() => {}}
+                        isLast
+                    />
                 </Section>
 
                 <Section title="Download Settings">
-                <Row
-                    icon={downloadIcon}
-                    title="Auto Download"
-                    subtitle="Download new lessons automatically"
-                    isSwitch
-                    value={autoDownload}
-                    onValueChange={setAutoDownload}
-                />
-                <Row
-                    icon={wifiIcon}
-                    title="Download on WiFi Only"
-                    subtitle="Save mobile data"
-                    isSwitch
-                    value={wifiOnly}
-                    onValueChange={setWifiOnly}
-                    isLast
-                />
+                    <Row
+                        icon={downloadIcon}
+                        title="Auto Download"
+                        subtitle="Download new lessons automatically"
+                        isSwitch
+                        value={autoDownload}
+                        onValueChange={setAutoDownload}
+                    />
+                    <Row
+                        icon={wifiIcon}
+                        title="Download on WiFi Only"
+                        subtitle="Save mobile data"
+                        isSwitch
+                        value={wifiOnly}
+                        onValueChange={setWifiOnly}
+                        isLast
+                    />
                 </Section>
 
                 <Section title="Other">
-                <Row
-                    icon={PrivacyIcon}
-                    title="Privacy Policy"
-                    onPress={() => {}}
-                />
-                <Row
-                    icon={ServiceIcon}
-                    title="Terms of Service"
-                    onPress={() => {}}
-                />
-                <Row
-                    icon={CacheIcon}
-                    title="Clear Cache"
-                    onPress={() => {}}
-                    isLast
-                />
+                    <Row
+                        icon={PrivacyIcon}
+                        title="Privacy Policy"
+                        onPress={() => {}}
+                    />
+                    <Row
+                        icon={ServiceIcon}
+                        title="Terms of Service"
+                        onPress={() => {}}
+                    />
+                    <Row
+                        icon={CacheIcon}
+                        title="Clear Cache"
+                        onPress={()=>navigation.navigate('PaymentNotification')}
+                        isLast
+                    />
                 </Section>
 
                 <Text
@@ -142,6 +143,16 @@ export default function SettingScreen() {
                     }}
                     >
                     Learner v1.0.0
+                </Text>
+                <Text
+                    style={{
+                        textAlign: "center",
+                        color: "#999",
+                        fontSize: 12,
+                        marginTop: 10,
+                    }}
+                    >
+                    @ 2025 Learner. All rights reserved.
                 </Text>
         </ScrollView>
     </View>

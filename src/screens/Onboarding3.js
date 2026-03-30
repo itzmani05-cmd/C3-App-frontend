@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function Onboarding3 ({navigation}) {
   return (
         <ImageBackground
-            source={require('../assests/onBoardScreenPics/onBoardScreen1.jpg')}
+            source={require('../assests/onBoardScreenPics/onBoardScreen3.jpg')}
             style={{flex:1,width:'100%',height:'100%'}}
             resizeMode='cover'
         >
@@ -17,7 +17,7 @@ export default function Onboarding3 ({navigation}) {
                     colors={['transparent','#000']}
                     locations={[0.55,1]}
                 >
-                    <View style={{padding:20}}>
+                    <View style={{padding:20,marginBottom:30}}>
                         <View style={{marginBottom:20,width:264}}>
                             <Text style={{color:'#FFFFFF',fontFamily:'ManropeExtraBold',fontSize:44,lineHeight: 50}}>
                                 Earn

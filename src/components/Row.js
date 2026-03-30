@@ -1,10 +1,10 @@
 import React from 'react'
 import {View, Text, Switch, Image, TouchableOpacity} from 'react-native';
 
-export default function Row({icon, title, subtitle, onPress,isSwitch, value, onValueChange,isLast}) {
+export default function Row({icon, title, subtitle, onPress,isSwitch, value, onValueChange,isLast,}) {
   return (
     <TouchableOpacity 
-        onPress={onPress}
+        onPress={isSwitch?null:onPress}
         activeOpacity={0.7}
         style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',padding:16,borderBottomWidth:isLast?0:0.5,gap:10,borderColor:'#E5E5E5'}}
     >
@@ -17,7 +17,7 @@ export default function Row({icon, title, subtitle, onPress,isSwitch, value, onV
         </View>
         {isSwitch
             ?<Switch value={value} onValueChange={onValueChange} />
-            :<Image style={{width:5,height:10,}} source={require('../assests/RightArrowBlue.png')}/>
+            :<Image style={{width:20,height:20,}} source={require('../assests/ArrowRightBlack.png')}/>
         }
     </TouchableOpacity>
   )

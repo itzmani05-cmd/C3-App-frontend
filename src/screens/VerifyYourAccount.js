@@ -1,22 +1,22 @@
 import React,{useState} from 'react'
 import {View, TextInput, TouchableOpacity, Image, Text} from 'react-native'
 
-export default function VerifyYourAccount () {
+export default function VerifyYourAccount ({navigation}) {
     const [otp,setOtp]=useState(['0','0','0','0','0']);
   return (
     <View
         style={{flex:1,backgroundColor:'#F5F5F5',padding:20}}
     >
-        <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+        <View style={{width:'100%',height:406,alignItems:'center',justifyContent:'center'}}>
             <Image source={require('../assests/logo.png')} 
-                style={{width:244,height:48, resizeMode:'contain'}}
+                style={{width:244,height:66.25, resizeMode:'contain'}}
             />
             <Text style={{color:'#1A1A1A',fontFamily:'ManropeRegular',fontSize:12,marginTop:5}}>
                 Learn Skills. Grow Daily.
                 </Text>
             </View>
-        <View >
-            <View style={{flex:1,justifyContent:'flex-start'}}>
+        <View  style={{marginTop:30}}>
+            <View style={{marginTop:20}}>
                 <Text style={{fontFamily:'ManropeBold',fontSize:20,color:'#1A1A1A'}}>
                     Verify Your Account
                 </Text>
@@ -58,7 +58,7 @@ export default function VerifyYourAccount () {
                         />
                     ))}
                 </View>
-                <TouchableOpacity style={{backgroundColor:'#4F46E5', height:52,justifyContent:'center',alignItems:'center',borderRadius:10,width:'100%',marginTop:16}}>
+                <TouchableOpacity onPress={()=>navigation.replace('MainApp')} style={{backgroundColor:'#4F46E5', height:52,justifyContent:'center',alignItems:'center',borderRadius:10,width:'100%',marginTop:16}}>
                     <Text style={{fontFamily:'ManropeMedium',fontSize:16,color:'#FDFDFD'}}>
                         Verify
                     </Text>
@@ -69,9 +69,14 @@ export default function VerifyYourAccount () {
             <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#1A1A1A'}}>
                 Didn't receive code?
             </Text>
-            <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#1A1A1A'}}>
-                Resend - 00:23
-            </Text>
+            <View style={{flexDirection:'row',alignItems:'center'}}>
+                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#1A1A1A'}}>
+                    Resend{' '}
+                </Text>
+                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#4F46E5'}}>
+                    - 00 : 23
+                </Text>
+            </View>
         </View>
     </View>
   )

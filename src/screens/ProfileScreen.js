@@ -2,7 +2,7 @@ import React from 'react';
 import {View, Text, Image, TouchableOpacity} from 'react-native';
 import Header from '../components/Header';
 
-export default function ProfileScreen () {
+export default function ProfileScreen ({navigation}) {
   return (
     <View>
         <Header
@@ -10,31 +10,31 @@ export default function ProfileScreen () {
             showBack={true}
         />
         <View style={{padding:22,}}>
-            {/* for profile name, id */}
+      
             <View style={{
               flexDirection:'row',
-                  alignItems:'center',
                   borderColor:'#4F46E5',
-                  // borderRadius:4,
+                  borderRadius:4,
                   backgroundColor:'#FFFFFF',
                   borderWidth:1,
-                  padding:12
+                  padding:12,
+                  position:'relative'
             }}>
               <Image source={require('../assests/Profile.jpg')}
                   style={{width:72,height:72,borderRadius:36}}
                 />
-              <View style={{flex:1,marginLeft:12}}>
+              <View style={{flex:1,marginLeft:12,paddingTop:2}}>
                 <Text style={{fontFamily:'ManropeExtraBold',fontSize:16,color:'#1A1A1A'}}>
                   Martin James
                 </Text>
-                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#666666'}}>
+                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#666666',marginTop:4}}>
                   martin.james12@outlook.com
                 </Text>
-                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#666666'}}>
+                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#666666',marginTop:4}}>
                   ID: 123456789
                 </Text>
               </View>
-              <TouchableOpacity>
+              <TouchableOpacity style={{position:'absolute',top:20,right:12}}>
                 <Image 
                   source={require('../assests/EditIcon.png')} 
                   style={{width:19,height:19}}
@@ -42,7 +42,6 @@ export default function ProfileScreen () {
               </TouchableOpacity>
             </View>
 
-            {/* for courses, certificates, learnign */}
             <View style={{flexDirection:'row',marginTop:20}}>
               {[
                 {value:'12',label:'Courses'},
@@ -60,18 +59,16 @@ export default function ProfileScreen () {
                     borderWidth:1,
                     backgroundColor:'#FFFFFF',
                     padding:10,
-                    marginRight:4,
+                    marginRight:10,
                   }}
                 >
                   <Text 
                     style={{
-                      color:item.label==="Certificates"
+                      color:item.label==="Courses"
                         ?'#4F46E5':item.label==="Learning"
-                        ?'#319F43':'#EBB300',
+                        ?'#EBB300':'#319F43',
                       fontFamily:'ManropeBold',
                       fontSize:16,
-                      marginTop:2,
-                      
                     }}
                   >
                     {item.value}
@@ -85,13 +82,14 @@ export default function ProfileScreen () {
 
             <View style={{marginTop:20}}>
               {[
-                { label: "My Courses", icon: require('../assests/CourseIcon.png') },
-                { label: "Certificates", icon: require('../assests/CertificateIcon.png') },
-                { label: "Payment History", icon: require('../assests/PaymentIcon.png') },
-                { label: "Settings", icon: require('../assests/SettingIcon.png') },
+                { label: "My Courses", icon: require('../assests/CourseIcon.png'),screen:'MyCourse' },
+                { label: "Certificates", icon: require('../assests/CertificateIcon.png'),screen:'Certificates' },
+                { label: "Payment History", icon: require('../assests/PaymentIcon.png'),screen:'PaymentHistory' },
+                { label: "Settings", icon: require('../assests/SettingIcon.png'),screen:'Settings' },
               ].map((item,index)=>(
                 <TouchableOpacity
                   key={index}
+                  onPress={()=>navigation.navigate(item.screen)}
                   style={{
                     height:52,
                     flexDirection:'row',
@@ -101,8 +99,6 @@ export default function ProfileScreen () {
                     borderColor:'#F0F0F0',
                     padding:16,
                     borderWidth:1,
-                    
-
                   }}
                 >
                   <View style={{flexDirection:'row',alignItems:'center'}}>
@@ -126,20 +122,20 @@ export default function ProfileScreen () {
                 height:52,
                 backgroundColor:'#FFCCCD',
                 borderRadius:8,
-                marginTop:20,
+                marginTop:30,
                 width:'100%'
               }}
             >
               <Image 
                 source={require('../assests/LogoutIcon.png')}
-                style={{width:20,height:20,marginLeft:20}}
+                style={{width:20,height:20,marginLeft:20,}}
               />
               <Text style={{color:'#FF383C',fontSize:14,marginLeft:8,}}>
                 Logout
               </Text>
             </TouchableOpacity>
 
-            <Text style={{color:'#666666',fontFamily:'ManropeRegular',fontSize:14,textAlign:'center',marginTop:30}}>
+            <Text style={{color:'#666666',fontFamily:'ManropeRegular',fontSize:14,textAlign:'center',marginTop:40,marginBottom:20}}>
               Version 1.0.0
             </Text>
         </View>

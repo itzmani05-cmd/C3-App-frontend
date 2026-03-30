@@ -3,7 +3,7 @@ import React from 'react'
 import {View, Text,Image} from 'react-native';
 export default function OverviewCard() {
   return (
-    <View style={{padding:16}}>
+    <View style={{padding:16,}}>
                         <Text style={{fontFamily:'ManropeBold',fontSize:14,color:'#4D4D4D'}}>
                             About This Course
                         </Text>

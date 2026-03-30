@@ -3,7 +3,7 @@ import {View, Text,Image, ScrollView} from 'react-native';
 import {notifications} from '../data/PHNotificationData';
 import Header from '../components/Header';
 
-export default function PaymentNotification () {
+export default function PaymentNotification ({navigation}) {
   return (
     <View >
         <Header 

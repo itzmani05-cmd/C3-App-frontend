@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, View, Image } from 'react-native';
 
-export default function MyLearningCard({ item }) {
+export default function MyHomeLearningCard({ item }) {
   return (
     <View
       style={{
@@ -10,13 +10,15 @@ export default function MyLearningCard({ item }) {
         borderColor: '#F0F0F0',
         borderWidth: 1,
         overflow: 'hidden',
-        marginHorizontal: 16,
-        marginTop: 14,
+        marginBottom: 4,
+        width:'35%',
+        marginRight:12
+        
       }}
     >
       <Image
         source={item.image}
-        style={{width: '100%', height: 110 }}
+        style={{width: '100%', height: 116 }}
       />
 
       <View style={{padding: 10 }}>
@@ -70,20 +72,6 @@ export default function MyLearningCard({ item }) {
             />
           </View>
         </View>
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#D4D2F9',
-            borderRadius: 6,
-            marginTop: 14,
-            alignItems: 'center',
-            paddingVertical: 10,
-          }}
-        >
-          <Text style={{ fontFamily: 'ManropeMedium', fontSize: 16, color: '#4F46E5' }}>
-            Continue Learning
-          </Text>
-        </TouchableOpacity>
-
       </View>
     </View>
   );

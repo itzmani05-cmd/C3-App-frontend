@@ -1,7 +1,7 @@
 import React,{useState} from 'react'
 import {View,TouchableOpacity,TextInput,Text,Image} from 'react-native';
 
-export default function ResetPasswordScreen() {
+export default function ResetPasswordScreen({navigation}) {
     const [showPassword,setShowPassword]=useState(false);
     const [showConfirm,setShowConfirm]=useState(false);
 
@@ -34,13 +34,13 @@ export default function ResetPasswordScreen() {
                         height:50,
                         paddingRight:16,                                
                         paddingLeft:16,
-                        marginBottom:15,
+                        marginBottom:10,
                         backgroundColor:'#fff',
-                        marginTop:20
+                        marginTop:30
                         }}
                     >
                         <Image source={require('../assests/PasswordKey.png')}  
-                            style={{width:20,height:20,marginRight:10}}
+                            style={{width:20,height:20}}
                         />
                         <TextInput 
                             placeholder='Password'
@@ -54,7 +54,7 @@ export default function ResetPasswordScreen() {
                                     ?require('../assests/PasswordKey.png')
                                     :require('../assests/PasswordSecretIcon.png')
                                 }
-                                style={{width:20, height:20,marginRight:10}}
+                                style={{width:20, height:20}}
                             />
                         </TouchableOpacity>
                     </View>
@@ -72,7 +72,7 @@ export default function ResetPasswordScreen() {
                         }}
                     >
                         <Image source={require('../assests/PasswordKey.png')}  
-                            style={{width:20,height:20,marginRight:10}}
+                            style={{width:20,height:20}}
                         />
                         <TextInput 
                             placeholder='Confirm Password'
@@ -86,12 +86,12 @@ export default function ResetPasswordScreen() {
                                     ?require('../assests/PasswordKey.png')
                                     :require('../assests/PasswordSecretIcon.png')
                                 }
-                                style={{width:20, height:20,marginRight:10}}
+                                style={{width:20, height:20}}
                             />
                         </TouchableOpacity>         
                     </View>
                 </View>
-                <TouchableOpacity style={{backgroundColor:'#4F46E5',height:52,borderRadius:6,marginTop:20,alignItems:'center',justifyContent:'center',}}>
+                <TouchableOpacity style={{backgroundColor:'#4F46E5',height:52,borderRadius:6,marginTop:15,alignItems:'center',justifyContent:'center',}}>
                     <Text style={{color:'#FDFDFD',fontSize:16,fontFamily:'ManropeMedium'}}>Reset Password</Text>
                 </TouchableOpacity>
             </View>

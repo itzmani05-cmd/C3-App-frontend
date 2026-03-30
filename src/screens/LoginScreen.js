@@ -32,13 +32,13 @@ export default function LoginScreen({navigation}){
                 height:50,
                 paddingRight:16,
                 paddingLeft:16,
-                marginBottom:15,
+                marginBottom:10,
                 backgroundColor:'#fff'
             }}
         >
             <Image 
                 source={require('../assests/EmailIcon.png')} 
-                style={{width:20,height:20,marginRight:10}}
+                style={{width:20,height:20,marginRight:1}}
             />
             <TextInput 
                 placeholder='Email ID / Phone No'
@@ -62,7 +62,7 @@ export default function LoginScreen({navigation}){
             }}
         >
             <Image source={require('../assests/PasswordKey.png')}  
-                style={{width:20,height:20,marginRight:10}}
+                style={{width:20,height:20,marginRight:1}}
             />
             <TextInput 
                 placeholder='Password'
@@ -76,7 +76,7 @@ export default function LoginScreen({navigation}){
                         ?require('../assests/PasswordKey.png')
                         :require('../assests/PasswordSecretIcon.png')
                     }
-                    style={{width:20, height:20,marginRight:10}}
+                    style={{width:20, height:20,}}
                 
                 />
             </TouchableOpacity>
@@ -98,11 +98,13 @@ export default function LoginScreen({navigation}){
                     Remember Me
                 </Text>
             </TouchableOpacity>
-            <Text style={{color:'#4F46E5', fontFamily:'ManropeRegular',fontSize:14,lineHeight:20}}>
-                Forgot password?
-            </Text>
+            <TouchableOpacity onPress={()=>navigation.navigate('ResetPassword')}> 
+                <Text style={{color:'#4F46E5', fontFamily:'ManropeRegular',fontSize:14,lineHeight:20}}>
+                    Forgot password?
+                </Text>
+            </TouchableOpacity>
         </View>
-        <TouchableOpacity
+        <TouchableOpacity onPress={()=>navigation.navigate('VerifyAccount')}
             style={{backgroundColor:'#4F46E5', paddingRight:32, height:52, paddingLeft:32,  borderRadius:6,justifyContent:'center', alignItems:'center'}}
         >
             <Text style={{color:'#fff', textAlign:'center',lineHeight:24,letterSpacing:0, fontFamily:'ManropeMedium',fontSize:16}}>
@@ -117,7 +119,7 @@ export default function LoginScreen({navigation}){
             <View style={{flex:1,height:1,backgroundColor:'#ddd'}}/>
         </View>
         <View 
-            style={{flexDirection:'row',justifyContent:'center',gap:20}}
+            style={{flexDirection:'row',justifyContent:'center',gap:10}}
         >
             <Image source={require('../assests/socialMediaLogos/GoogleIcon.png')} style={{width:50, height:50}}/>
             <Image source={require('../assests/socialMediaLogos/AppleIcon.png')} style={{width:50, height:50}}/>

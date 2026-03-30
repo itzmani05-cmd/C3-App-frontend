@@ -4,21 +4,37 @@ import {View, Text, Image,TouchableOpacity} from 'react-native';
 const Header=({title, showBack})=>{
     return (
         <View 
-            style={{height:80,flexDirection:'row',alignItems:'center',justifyContent:'center',backgroundColor:'#FFFFFF',borderColor:'#E6E6E6',padding:10}}
+            style={{height:100,paddingTop:50,       
+                paddingBottom:18,       
+                paddingHorizontal:16,   
+                backgroundColor:'#FFFFFF',
+                borderBottomWidth:1,    
+                borderColor:'#E6E6E6',
+                justifyContent:'center',
+                flexDirection:'row',
+                alignItems:'center'
+            }}
         >
-            {showBack?(
-                <TouchableOpacity style={{position:'absolute',left:20}}>
+            {showBack&&(
+                <TouchableOpacity
+                    style={{
+                        position:'absolute',
+                        left:16,  
+                        width:30,
+                        height:30,
+                        bottom:20,
+                        justifyContent:'center',
+                        alignItems:'center'
+                    }}
+                >
                     <Image source={require('../assests/ArrowLeftBlack.png')} 
                         style={{width:16,height:8}}
                     />
                 </TouchableOpacity>
-            ):(
-                <View><Text>back</Text></View>
             )}
-            
-            <Text style={{fontFamily:'ManropeExtraBold',fontSize:16,olor:'#1A1A1A'}}>
+            <Text style={{fontFamily:'ManropeExtraBold',fontSize:16,color:'#1A1A1A',textAlign:'center'}}>
                 {title}
-            </Text>
+            </Text>    
         </View>
     )
 }

@@ -2,9 +2,9 @@ import Header from '../components/Header';
 import React from 'react'
 import {View, Text, Image,TouchableOpacity,TextInput,ScrollView} from 'react-native';
 
-export default function PaymentScreen(){
+export default function PaymentScreen({navigation}){
   return (
-    <View style={{flex:1}}>
+    <View style={{flex:1,backgroundColor:'#FBFBFB'}}>
         <Header
             title="Payment"
             showBack={true}
@@ -32,7 +32,7 @@ export default function PaymentScreen(){
                     <Text style={{fontFamily:'ManropeSemibold',fontSize:14,color:'#333333',marginBottom:10}}>
                         Select Card
                     </Text>
-                    <View style={{flexDirection:'row',alignItems:'center',gap:10,marginBottom:8,backgroundColor:'#FFFFFF'}}>
+                    <View style={{flexDirection:'row',alignItems:'center',gap:10,marginBottom:8}}>
                         <Image 
                             style={{width:50,height:36,borderRadius:6,}}
                             source={require('../assests/PaymentPage/PaymentOne.png')} />
@@ -42,12 +42,12 @@ export default function PaymentScreen(){
                     <Image 
                         style={{width:'100%',height:203,marginTop:6,marginBottom:2}}
                         source={require('../assests/PaymentPage/ATMCardPic.png')} />
-                    <View style={{backgroundColor:'#F0F0F0',flexDirection:'row',alignItems:'center',borderRadius:30,paddingHorizontal:12,paddingVertical:6,marginVertical:16}}>
+                    <View style={{backgroundColor:'#F0F0F0',flexDirection:'row',alignItems:'center',borderRadius:30,paddingHorizontal:10,paddingVertical:6,marginVertical:16}}>
                         <TextInput  placeholder='Promo Code'
                             placeholderTextColor='#676767'
                             style={{
                                 flex:1,
-                                paddingVertical:14,
+                                paddingVertical:6,
                                 color:'#676767',
                                 fontSize:16,fontFamily:'ManropeRegular'
                             }}
@@ -94,7 +94,7 @@ export default function PaymentScreen(){
                                     Net Banking
                                 </Text>
                             </View>
-                            <Image source={require('../assests/ArrowRight.png')}/>
+                            <Image source={require('../assests/ArrowRightBlack.png')}/>
                         </View>
                     </View>
                 </View>

@@ -14,12 +14,12 @@ export default function WishlistCard({item}) {
       marginHorizontal:16,marginTop:14
     }}>
         <Image  
-          source={require('../assests/courses/DigitalMarketingPic.jpg')}
+          source={item.image}
           style={{width:'100%',height:104}}  
         />
         <View>
-          <View>
-            <View style={{padding:14}}>
+          <View style={{padding:8}}>
+            <View >
               <Text style={{fontFamily:'ManropeBold',fontSize:14,color:'#4D4D4D'}}>
                 {item.title}
               </Text>
@@ -28,7 +28,7 @@ export default function WishlistCard({item}) {
               </Text>
             </View>
 
-            <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',paddingHorizontal:12}}>
+            <View style={{marginTop:4,flexDirection:'row',justifyContent:'space-between',alignItems:'center'}}>
               <View style={{flexDirection:'row',alignItems:'center'}}>
                 <Text style={{fontFamily:'ManropeRegular',fontSize:12,color:'#4D4D4D',marginRight:8}}>
                   ⭐ {item.rating}
@@ -46,9 +46,9 @@ export default function WishlistCard({item}) {
           <TouchableOpacity
             style={{
               backgroundColor:'#4F46E5',
-              marginHorizontal:14,
+              marginHorizontal:8,
               borderRadius:6,
-              marginTop:14,
+              marginTop:9,
               marginBottom:12,
               alignItems:'center',
               paddingVertical:10

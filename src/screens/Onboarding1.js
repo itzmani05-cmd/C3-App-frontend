@@ -18,7 +18,7 @@ export default function Onboarding1({navigation}) {
                     colors={['transparent','#000']}
                     locations={[0.55,1]}
                 >
-                    <View style={{padding:20}}>
+                    <View style={{padding:20,marginBottom:30}}>
                         <View style={{marginBottom:10,width:264}}>
                             <Text style={{color:'#FFFFFF',fontFamily:'ManropeExtraBold',fontSize:44,lineHeight: 50}}>
                                 Explore

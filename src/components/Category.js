@@ -7,8 +7,8 @@ export default function Category() {
   
     return (
         <View style={{marginTop:20}}>
-            <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:10,paddingHorizontal:10}}>
-                <Text>
+            <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:10,paddingHorizontal:20,paddingLeft:15}}>
+                <Text style={{color:'#4D4D4D',fontFamily:'ManropeBold',fontSize:14}}>
                     Categories
                 </Text>
                 <View style={{flexDirection:'row',alignItems:'center'}}>

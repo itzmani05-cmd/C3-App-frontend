@@ -1,7 +1,7 @@
 import React,{useState} from 'react'
 import {View, Text, TextInput, TouchableOpacity,Image} from 'react-native'
 
-export default function SIgnUpScreen () {
+export default function SIgnUpScreen ({navigation}) {
     const [agree, setAgree] =useState(false);
     const [showPassword, setShowPassword]=useState(false);
   return (
@@ -98,7 +98,7 @@ export default function SIgnUpScreen () {
                 }}
             >
                 <Image source={require('../assests/PasswordKey.png')}  
-                    style={{width:20,height:20,marginRight:10}}
+                    style={{width:20,height:20}}
                 />
                 <TextInput 
                     placeholder='Password'
@@ -112,7 +112,7 @@ export default function SIgnUpScreen () {
                             ?require('../assests/PasswordKey.png')
                             :require('../assests/PasswordSecretIcon.png')
                         }
-                        style={{width:20, height:20,marginRight:10}}
+                        style={{width:20, height:20}}
                     />
                 </TouchableOpacity>
             </View>
@@ -144,7 +144,7 @@ export default function SIgnUpScreen () {
                             ?require('../assests/PasswordKey.png')
                             :require('../assests/PasswordSecretIcon.png')
                         }
-                        style={{width:20, height:20,marginRight:10}}
+                        style={{width:20, height:20}}
                     />
                 </TouchableOpacity>         
             </View>
@@ -173,7 +173,7 @@ export default function SIgnUpScreen () {
         >
             <Text style={{fontSize:14,color:'#000', fontFamily:'ManropeRegular'}}>Already have an account? </Text>
             <TouchableOpacity onPress={()=>navigation.navigate('Login')}>
-                <Text style={{color:'#4F46E5',fontSize:14,color:'#4F46E5',fontFamily:'ManropeSemiBold' }}>{' '}Login</Text>
+                <Text style={{color:'#4F46E5',fontSize:14,color:'#4F46E5',fontFamily:'ManropeSemiBold' }}>Login</Text>
             </TouchableOpacity>
         </View>
     </View>
