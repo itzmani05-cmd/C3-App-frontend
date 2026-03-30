@@ -11,7 +11,7 @@ export default function SplashScreen({navigation}) {
   }, []);
 
   return (
-    <View style={{width:'100%',height:183,alignItems:'center',justifyContent:'center',marginBottom:30}}>
+    <View style={{flex:1,alignItems:'center',justifyContent:'center',marginBottom:30}}>
       <Image source={require('../assests/logo.png')} 
         style={{width:244,height:66.25,resizeMode:'contain'}} 
       />
