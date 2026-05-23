@@ -1,16 +1,9 @@
-# C³ Platform 📱
+# C³ Platform 
 
 A modern **React Native Expo learner application** built for the **C3 Institute**, designed to provide an engaging mobile learning experience for students.
 
 The platform supports **lessons, quizzes, progress tracking, profile management, and administrator workflows**, powered by cloud-based APIs for seamless educational access.
 
----
-
-## 🚀 GitHub About
-
-> **C³ Platform** — React Native Expo learner app for student lessons, quiz questions, progress tracking, and admin management with cloud-backed APIs.
-
----
 
 ## ✨ Features
 
@@ -84,98 +77,6 @@ C3-Platform/
 │   └── services/            # API services (if applicable)
 ```
 
----
-
-## ⚙️ Prerequisites
-
-Before running the project, ensure you have installed:
-
-- Node.js **v18+** (Recommended: Latest LTS)
-- npm or yarn
-- Expo CLI
-- Android Studio (for Android Emulator)
-- Xcode (for iOS development on macOS)
-
-Install Expo CLI globally:
-
-```bash
-npm install -g expo-cli
-```
-
----
-
-## 🔧 Installation & Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/c3-platform.git
-```
-
-### 2. Navigate to Project Folder
-
-```bash
-cd c3-platform
-```
-
-### 3. Install Dependencies
-
-```bash
-npm install
-```
-
-or
-
-```bash
-yarn install
-```
-
----
-
-## ▶️ Running the Application
-
-### Start Expo Development Server
-
-```bash
-npm start
-```
-
-or
-
-```bash
-yarn start
-```
-
----
-
-### Run on Android
-
-```bash
-npm run android
-```
-
-or
-
-```bash
-yarn android
-```
-
----
-
-### Run on iOS
-
-```bash
-npm run ios
-```
-
-or
-
-```bash
-yarn ios
-```
-
----
-
 ## 🌐 Backend Configuration
 
 The application uses a backend API configured in:
@@ -189,20 +90,6 @@ Current API Endpoint:
 ```txt
 https://c3app-backend.onrender.com
 ```
-
-Example configuration:
-
-```json
-{
-  "expo": {
-    "extra": {
-      "API_URL": "https://c3app-backend.onrender.com"
-    }
-  }
-}
-```
-
----
 
 ## 🔐 Authentication
 
@@ -287,18 +174,4 @@ git push origin feature-name
 ```
 
 5. Open a Pull Request
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
-
----
-
-## 👨‍💻 Author
-
-**Manikandan**  
-Computer Science Student | Full Stack Developer
-
-GitHub: https://github.com/your-username
+```
