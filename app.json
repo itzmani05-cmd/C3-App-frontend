@@ -1,32 +1,44 @@
 {
   "expo": {
-    "name": "learnerApp",
-    "slug": "learnerApp",
+    "name": "C³ Platform",
+    "slug": "c3-institute",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+    "icon": "./assets/C3AppLogo.png",
+    "scheme": "c3app",
+    "android": {
+      "package": "com.c3institute.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.c3institute.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "extra": {
+      "API_URL": "https://c3app-backend.onrender.com",
+      "eas": {
+        "projectId": "1595038e-2d1a-4827-9cfe-04079faedab6"
+      }
     },
     "plugins": [
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow access to your photos to add images to questions.",
+          "cameraPermission": "Allow the app to use the camera for question images."
+        }
+      ]
+    ],
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/1595038e-2d1a-4827-9cfe-04079faedab6"
+    }
   }
 }

@@ -1,19 +1,36 @@
 import React from 'react'
-import { View,Image,Text,TouchableOpacity } from 'react-native'
+import { View,TouchableOpacity } from 'react-native'
+import { ArrowRight } from 'lucide-react-native'
+import AppText from './AppText'
 
 export default function BottomNav  ({onSkip,onNext})  {
   return (
     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginTop:10}}>
-        <TouchableOpacity onPress={onSkip}>
-            <Text style={{color:'#FFFFFF',fontFamily:'ManropeRegular',fontSize:14}}>
+        <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+            <AppText variant="semiBold" style={{color:'#FFFFFF',fontSize:14}}>
                 Skip
-            </Text>
+            </AppText>
         </TouchableOpacity>
         <TouchableOpacity onPress={onNext}
-            style={{borderRadius:60,width:48,height:48,padding:12,backgroundColor:'#4F46E5',alignItems:'center',justifyContent:'center'}}    
+            activeOpacity={0.85}
+            style={{
+                borderRadius:60,
+                width:48,
+                height:48,
+                padding:12,
+                backgroundColor:'#2563EB',
+                alignItems:'center',
+                justifyContent:'center',
+                shadowColor:'#2563EB',
+                shadowOffset:{width:0,height:4},
+                shadowOpacity:0.3,
+                shadowRadius:8,
+                elevation:5,
+            }}
         >
-            <Image source={require('../assests/ArrowRightWhite.png')} style={{color:'#FDFDFD',width:24,height:24}}/>
+            <ArrowRight size={20} color="#FFFFFF" />
         </TouchableOpacity>
     </View>
   )
 }
+

@@ -1,145 +1,361 @@
-import React from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import axios from 'axios';
+import {
+  ChevronRight,
+  BookOpen,
+  Search,
+  KeyRound,
+  Settings,
+  LifeBuoy,
+  LogOut,
+} from 'lucide-react-native';
 import Header from '../components/Header';
+import { API_BASE_URL } from '../config/api';
+import { clearSession } from '../utils/authStorage';
 
-export default function ProfileScreen ({navigation}) {
+function formatPercent(value) {
+  return `${Math.round(value || 0)}%`;
+}
+
+function formatJoinDate(value) {
+  if (!value) {
+    return 'Member';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return 'Member';
+  }
+
+  return `Joined ${date.toLocaleDateString('en-IN', {
+    month: 'short',
+    year: 'numeric',
+  })}`;
+}
+
+function StatCard({ label, value, accent }) {
   return (
-    <View>
-        <Header
-            title="Profile"
-            showBack={true}
-        />
-        <View style={{padding:22,}}>
-      
-            <View style={{
-              flexDirection:'row',
-                  borderColor:'#4F46E5',
-                  borderRadius:4,
-                  backgroundColor:'#FFFFFF',
-                  borderWidth:1,
-                  padding:12,
-                  position:'relative'
-            }}>
-              <Image source={require('../assests/Profile.jpg')}
-                  style={{width:72,height:72,borderRadius:36}}
-                />
-              <View style={{flex:1,marginLeft:12,paddingTop:2}}>
-                <Text style={{fontFamily:'ManropeExtraBold',fontSize:16,color:'#1A1A1A'}}>
-                  Martin James
-                </Text>
-                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#666666',marginTop:4}}>
-                  martin.james12@outlook.com
-                </Text>
-                <Text style={{fontFamily:'ManropeRegular',fontSize:14,color:'#666666',marginTop:4}}>
-                  ID: 123456789
-                </Text>
-              </View>
-              <TouchableOpacity style={{position:'absolute',top:20,right:12}}>
-                <Image 
-                  source={require('../assests/EditIcon.png')} 
-                  style={{width:19,height:19}}
-                />
-              </TouchableOpacity>
-            </View>
+    <View
+      style={{
+        flex: 1,
+        marginHorizontal: 4,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+      }}
+    >
+      <Text style={{ color: '#6B7280', fontFamily: 'ManropeMedium', fontSize: 12 }}>
+        {label}
+      </Text>
+      <Text
+        style={{
+          marginTop: 8,
+          color: accent,
+          fontFamily: 'ManropeExtraBold',
+          fontSize: 22,
+        }}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
 
-            <View style={{flexDirection:'row',marginTop:20}}>
-              {[
-                {value:'12',label:'Courses'},
-                {value:'5',label:'Certificates'},
-                {value:'48h',label:'Learning'},
-              ].map((item,index)=>(
-                <View
-                  key={index}
-                  style={{
-                    flex:1,
-                    alignItems:'center',
-                    borderRadius:8,
-                    marginBottom:10,
-                    borderColor:'#F0F0F0',
-                    borderWidth:1,
-                    backgroundColor:'#FFFFFF',
-                    padding:10,
-                    marginRight:10,
-                  }}
-                >
-                  <Text 
-                    style={{
-                      color:item.label==="Courses"
-                        ?'#4F46E5':item.label==="Learning"
-                        ?'#EBB300':'#319F43',
-                      fontFamily:'ManropeBold',
-                      fontSize:16,
-                    }}
-                  >
-                    {item.value}
-                  </Text>
-                  <Text style={{color:'#4D4D4D',fontFamily:'ManropeRegular',fontSize:14}}>
-                    {item.label}
-                  </Text>
-                </View>
-              ))}
-            </View>
+function ActionRow({ icon: Icon, label, helper, onPress, tone = 'default' }) {
+  const iconBackgroundColor = tone === 'danger' ? '#FEE2E2' : '#F3F4F6';
+  const iconTintColor = tone === 'danger' ? '#DC2626' : '#2563EB';
 
-            <View style={{marginTop:20}}>
-              {[
-                { label: "My Courses", icon: require('../assests/CourseIcon.png'),screen:'MyCourse' },
-                { label: "Certificates", icon: require('../assests/CertificateIcon.png'),screen:'Certificates' },
-                { label: "Payment History", icon: require('../assests/PaymentIcon.png'),screen:'PaymentHistory' },
-                { label: "Settings", icon: require('../assests/SettingIcon.png'),screen:'Settings' },
-              ].map((item,index)=>(
-                <TouchableOpacity
-                  key={index}
-                  onPress={()=>navigation.navigate(item.screen)}
-                  style={{
-                    height:52,
-                    flexDirection:'row',
-                    justifyContent:'space-between',
-                    alignItems:'center',
-                    backgroundColor:'#FFFFFF',
-                    borderColor:'#F0F0F0',
-                    padding:16,
-                    borderWidth:1,
-                  }}
-                >
-                  <View style={{flexDirection:'row',alignItems:'center'}}>
-                    <Image source={item.icon} style={{width:20,height:20,marginRight:10}}/>
-                    <Text style={{fontFamily:'ManropeMedium',fontSize:14}}>
-                      {item.label}
-                    </Text>
-                  </View>
-                  <Image source={require('../assests/RightArrowBlue.png')}
-                    style={{width:20,height:20}}
-                  />
-                </TouchableOpacity>
-              ))}
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        marginTop: 12,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}
+    >
+      <View
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 12,
+          backgroundColor: iconBackgroundColor,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Icon size={20} color={iconTintColor} />
+      </View>
 
-            </View>
+      <View style={{ flex: 1, marginLeft: 12 }}>
+        <Text style={{ color: '#000000', fontFamily: 'ManropeBold', fontSize: 15 }}>
+          {label}
+        </Text>
+        <Text
+          style={{
+            marginTop: 4,
+            color: '#6B7280',
+            fontFamily: 'ManropeRegular',
+            fontSize: 12,
+          }}
+        >
+          {helper}
+        </Text>
+      </View>
 
-            <TouchableOpacity
+      <ChevronRight size={20} color="#2563EB" />
+    </TouchableOpacity>
+  );
+}
+
+export default function ProfileScreen({ navigation }) {
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const userId = global.userId || global.user?.userId;
+  const tabNavigation = navigation.getParent?.();
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Do you want to log out now?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          await clearSession();
+          global.userId = null;
+          global.user = null;
+          const rootNavigation =
+            navigation.getParent?.()?.getParent?.() ||
+            navigation.getParent?.() ||
+            navigation;
+
+          if (rootNavigation?.replace) {
+            rootNavigation.replace('Login');
+          } else {
+            navigation.navigate('Login');
+          }
+        },
+      },
+    ]);
+  };
+
+  const fetchProfileData = async (isRefreshing = false) => {
+    if (!userId) {
+      setUser(null);
+      setStats({});
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
+
+    if (isRefreshing) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    try {
+      const headers = { userid: userId };
+      const [profileRes, dashboardRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/api/user/profile`, { headers }),
+        axios.get(`${API_BASE_URL}/api/user/dashboard`, { headers }),
+      ]);
+
+      setUser(profileRes.data || null);
+      setStats(dashboardRes.data?.stats || {});
+    } catch (err) {
+      console.log('Profile screen error:', err);
+      Alert.alert('Error', 'Failed to load profile');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfileData();
+  }, [userId]);
+
+  const openTab = (screenName) => {
+    if (tabNavigation?.navigate) {
+      tabNavigation.navigate(screenName);
+      return;
+    }
+
+    navigation.navigate(screenName);
+  };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
+        <Header title="Profile" rightLabel="Logout" onRightPress={handleLogout} />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#2563EB" />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
+      <Header title="Profile" onRightPress={handleLogout} />
+
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => fetchProfileData(true)} />
+        }
+      >
+        <View
+          style={{
+            backgroundColor: '#000000',
+            borderRadius: 20,
+            padding: 18,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <View
               style={{
-                flexDirection:'row',
-                alignItems:'center',
-                height:52,
-                backgroundColor:'#FFCCCD',
-                borderRadius:8,
-                marginTop:30,
-                width:'100%'
+                width: 74,
+                height: 74,
+                borderRadius: 37,
+                backgroundColor: '#2563EB',
+                justifyContent: 'center',
+                alignItems: 'center',
               }}
             >
-              <Image 
-                source={require('../assests/LogoutIcon.png')}
-                style={{width:20,height:20,marginLeft:20,}}
-              />
-              <Text style={{color:'#FF383C',fontSize:14,marginLeft:8,}}>
-                Logout
+              <Text
+                style={{
+                  color: '#FFFFFF',
+                  fontFamily: 'ManropeExtraBold',
+                  fontSize: 36,
+                }}
+              >
+                {(user?.name || 'L').charAt(0).toUpperCase()}
               </Text>
-            </TouchableOpacity>
+            </View>
 
-            <Text style={{color:'#666666',fontFamily:'ManropeRegular',fontSize:14,textAlign:'center',marginTop:40,marginBottom:20}}>
-              Version 1.0.0
-            </Text>
+            <View style={{ flex: 1, marginLeft: 14 }}>
+              <Text
+                style={{
+                  color: '#FFFFFF',
+                  fontFamily: 'ManropeExtraBold',
+                  fontSize: 22,
+                }}
+              >
+                {user?.name || 'Learner'}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 4,
+                  color: '#FFFFFF',
+                  fontFamily: 'ManropeRegular',
+                }}
+              >
+                {user?.email || 'No email available'}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 6,
+                  color: '#FFFFFF',
+                  fontFamily: 'ManropeMedium',
+                  fontSize: 12,
+                }}
+              >
+                {(user?.role || 'student').toUpperCase()} | {formatJoinDate(user?.createdAt)}
+              </Text>
+            </View>
+          </View>
         </View>
 
+        <View style={{ marginTop: 24 }}>
+          <Text style={{ color: '#000000', fontFamily: 'ManropeBold', fontSize: 18 }}>
+            Quick Actions
+          </Text>
+
+          <ActionRow
+            icon={BookOpen}
+            label="Go to Home"
+            helper="Jump back to your dashboard"
+            onPress={() => openTab('Home')}
+          />
+          <ActionRow
+            icon={Search}
+            label="Open Practice"
+            helper="Start a lesson or retry a quiz"
+            onPress={() => openTab('Practice')}
+          />
+        </View>
+
+        <View style={{ marginTop: 24 }}>
+          <Text style={{ color: '#000000', fontFamily: 'ManropeBold', fontSize: 18 }}>
+            Account
+          </Text>
+
+          <ActionRow
+            icon={KeyRound}
+            label="Change Password"
+            helper="Update your account password"
+            onPress={() => navigation.navigate('ResetPassword')}
+          />
+          <ActionRow
+            icon={Settings}
+            label="Settings"
+            helper="Preferences screen is not added yet"
+            onPress={() => Alert.alert('Coming Soon', 'Settings will be available soon.')}
+          />
+          <ActionRow
+            icon={LifeBuoy}
+            label="Support"
+            helper="Get help with your learning account"
+            onPress={() => Alert.alert('Support', 'Please contact 6369925623 for help.')}
+          />
+          <ActionRow
+            icon={LogOut}
+            label="Logout"
+            helper="Sign out from this device"
+            tone="danger"
+            onPress={handleLogout}
+          />
+        </View>
+
+        <Text
+          style={{
+            color: '#6B7280',
+            fontFamily: 'ManropeRegular',
+            fontSize: 13,
+            textAlign: 'center',
+            marginTop: 28,
+          }}
+        >
+          Version 1.2.0
+        </Text>
+      </ScrollView>
     </View>
-  )
+  );
 }
+

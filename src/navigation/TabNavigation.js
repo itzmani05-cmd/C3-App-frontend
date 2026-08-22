@@ -4,13 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from '../screens/HomeScreen';
 import ExploreScreen from '../screens/ExploreScreen';
-import LearningScreen from '../screens/MyLearning';
-import WishlistScreen from '../screens/WishlistScreen';
 import ProfileStack from './ProfileStack';
+import { TAB_BAR_LABEL_STYLE } from '../theme/typography';
 
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigation(){
+export default function TabNavigation({route}){
+  const userId=route?.params?.userId;
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
@@ -22,14 +22,8 @@ export default function TabNavigation(){
             case 'Home':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'Explore':
+            case 'Practice':
               iconName = focused ? 'search' : 'search-outline';
-              break;
-            case 'Learning':
-              iconName = focused ? 'book' : 'book-outline';
-              break;
-            case 'Wishlist':
-              iconName = focused ? 'heart' : 'heart-outline';
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
@@ -38,22 +32,27 @@ export default function TabNavigation(){
 
           return <Ionicons name={iconName} size={22} color={color} />
         },
-        tabBarActiveTintColor:'#4F46E5',
-        tabBarInactiveTintColor:'#B3B3B3',
+        tabBarActiveTintColor:'#2563EB',
+        tabBarInactiveTintColor:'#9CA3AF',
         tabBarStyle:{
           height:65,
           paddingBottom:8,
-          paddingTop:6,
+          paddingTop:8,
           backgroundColor:'#FFFFFF',
-          borderTopWidth:0
+          borderTopWidth:1,
+          borderTopColor:'#F1F5F9',
+          shadowColor:'#0F172A',
+          shadowOffset:{width:0,height:-2},
+          shadowOpacity:0.05,
+          shadowRadius:8,
+          elevation:8,
         },
-        tabBarLabelStyle:{ fontSize:11 }
+        tabBarLabelStyle: TAB_BAR_LABEL_STYLE
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Explore" component={ExploreScreen} />
-      <Tab.Screen name="Learning" component={LearningScreen} />
-      <Tab.Screen name="Wishlist" component={WishlistScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} initialParams={{userId}} />
+      <Tab.Screen name="Practice" component={ExploreScreen} />
+      {/* <Tab.Screen name="Analytics" component={LearningScreen} /> */}
       <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   )

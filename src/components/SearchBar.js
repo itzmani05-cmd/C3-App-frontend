@@ -1,31 +1,27 @@
 import React from 'react'
-import {View,Image,Text,TextInput, TouchableOpacity,} from 'react-native';
+import {View, TouchableOpacity,} from 'react-native';
+import { Search } from 'lucide-react-native';
+import AppTextInput from './AppTextInput';
 
-export default function SearchBar () {
+export default function SearchBar ({ value, onChangeText, placeholder }) {
   return (
     <View
         style={{height:48,marginTop:16,flexDirection:'row',paddingHorizontal:16,alignItems:'center',justifyContent:'space-between'}}
     >
         <View
-            style={{flex:1,backgroundColor:'#FFFFFF',height:48,flexDirection:'row',borderRadius:6,alignItems:'center',paddingHorizontal:10,borderColor:'#CCCCCC',borderWidth:1,marginRight:10}}
+            style={{flex:1,backgroundColor:'#FFFFFF',height:48,flexDirection:'row',borderRadius:12,alignItems:'center',paddingHorizontal:12,borderColor:'#E5E7EB',borderWidth:1,marginRight:10,
+                shadowColor:'#0F172A',shadowOffset:{width:0,height:2},shadowOpacity:0.04,shadowRadius:6,elevation:1}}
         >
-            <Image source={require('../assests/SearchIcon.png')}
-                style={{width:16,height:16,}}
-            />
-            <TextInput
-                placeholder='Search...'
-                style={{flex:1,color:'#4D4D4D',fontFamily:'ManropeRegular',fontSize:14,marginLeft:10}}
-
+            <Search size={16} color="#9CA3AF" />
+            <AppTextInput
+                placeholder={placeholder || 'Search...'}
+                style={{flex:1,color:'#000000',fontSize:14,marginLeft:10}}
+                value={value}
+                onChangeText={onChangeText}
+                autoCapitalize="none"
+                autoCorrect={false}
             />
         </View>
-        <TouchableOpacity
-            style={{width:48,height:48,borderRadius:6,backgroundColor:'#4F46E5',alignItems:'center',justifyContent:'center'}}
-        >
-            <Image 
-                source={require('../assests/FilterIcon.png')}
-                style={{width:18,height:16}}
-            />
-        </TouchableOpacity>
     </View>
   )
 }

@@ -1,0 +1,1 @@
+export const API_BASE_URL = "https://c3-app-backend-2.onrender.com";
