@@ -352,7 +352,7 @@ export default function ProfileScreen({ navigation }) {
             marginTop: 28,
           }}
         >
-          Version 1.2.0
+          Version 2.0.0
         </Text>
       </ScrollView>
     </View>

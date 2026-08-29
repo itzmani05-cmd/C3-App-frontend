@@ -2,12 +2,12 @@
   "expo": {
     "name": "C³ Platform",
     "slug": "c3-institute",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "icon": "./assets/C3AppLogo.png",
     "scheme": "c3app",
     "android": {
       "package": "com.c3institute.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "permissions": [
         "android.permission.INTERNET",
         "android.permission.RECORD_AUDIO"
@@ -21,7 +21,7 @@
       }
     },
     "extra": {
-      "API_URL": "https://c3app-backend.onrender.com",
+      "API_URL": "https://c3-app-backend-2.onrender.com",
       "eas": {
         "projectId": "1595038e-2d1a-4827-9cfe-04079faedab6"
       }

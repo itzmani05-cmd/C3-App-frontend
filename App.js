@@ -33,10 +33,8 @@ export default function App() {
   const [initialRoute,setInitialRoute]=useState('Login');
 
   useEffect(() => {
-    async function initApp() {
+    async function checkForUpdate() {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/test`);
-        console.log(res.data);
         const update = await Updates.checkForUpdateAsync();
         console.log("Update available:", update.isAvailable);
 
@@ -47,13 +45,22 @@ export default function App() {
           console.log("Reloading app...");
           await Updates.reloadAsync();
         }
-
       } catch (err) {
-        console.log("Init error:", err);
+        console.log("Update check error:", err);
       }
     }
 
-    initApp();
+    async function pingApi() {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/test`);
+        console.log(res.data);
+      } catch (err) {
+        console.log("API ping error:", err);
+      }
+    }
+
+    checkForUpdate();
+    pingApi();
   }, []);
 
   useEffect(() => {
