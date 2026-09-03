@@ -10,7 +10,8 @@
       "versionCode": 2,
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "ios": {
@@ -33,6 +34,13 @@
         {
           "photosPermission": "Allow access to your photos to add images to questions.",
           "cameraPermission": "Allow the app to use the camera for question images."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/C3AppLogo.png",
+          "color": "#2563EB"
         }
       ]
     ],

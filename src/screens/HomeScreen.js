@@ -10,6 +10,7 @@ import {
 import axios from 'axios';
 import Header from '../components/Header';
 import SearchBar from '../components/SearchBar';
+import DailyChallengeCard from '../components/DailyChallengeCard';
 import { API_BASE_URL } from '../config/api';
 
 const cardShadow = {
@@ -83,6 +84,26 @@ export default function HomeScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnreadCount = async () => {
+    const userId = global.userId || global.user?.userId;
+    if (!userId) return;
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/notifications/unread-count`, {
+        headers: { userid: userId },
+      });
+      setUnreadCount(res.data?.count || 0);
+    } catch (err) {
+      console.log('Fetch unread notifications error:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const unsubscribe = navigation.addListener('focus', fetchUnreadCount);
+    return unsubscribe;
+  }, [navigation]);
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Do you want to log out now?', [
@@ -161,7 +182,13 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
-      <Header title="Home" rightLabel="Logout" onRightPress={handleLogout} />
+      <Header
+        title="Home"
+        rightLabel="Logout"
+        onRightPress={handleLogout}
+        onBellPress={() => navigation.navigate('NotificationsScreen')}
+        unreadCount={unreadCount}
+      />
 
       <ScrollView
         contentContainerStyle={{ paddingBottom: 24 }}
@@ -195,6 +222,8 @@ export default function HomeScreen({ navigation }) {
             {user?.name || 'Learner'}
           </Text>
         </View>
+
+        <DailyChallengeCard navigation={navigation} />
 
         {dashboard ? (
           <View style={{ marginTop: 14, paddingHorizontal: 12, flexDirection: 'row' }}>

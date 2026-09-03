@@ -1,13 +1,13 @@
 import React,{useState} from 'react'
 import {KeyboardAvoidingView,Platform,View, Image,Text, TextInput, TouchableOpacity,Alert,ScrollView, TouchableWithoutFeedback,Keyboard} from 'react-native';
 import axios from 'axios';
-import { Mail, Lock, Eye, EyeOff, ChevronRight } from 'lucide-react-native';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react-native';
 import { API_BASE_URL } from '../config/api';
 import { saveSession } from '../utils/authStorage';
+import { registerForDailyChallengePushNotifications } from '../utils/pushNotifications';
 
 export default function LoginScreen({navigation}){
     const [showPassword, setShowPassword]=useState(false);
-    const [role, setRole]=useState('student');
     const [submitting, setSubmitting]=useState(false);
 
     const [email,setEmail]=useState('');
@@ -27,18 +27,13 @@ export default function LoginScreen({navigation}){
         try{
             const res=await axios.post(`${API_BASE_URL}/api/auth/login`,{
                 email: normalizedEmail,
-                password: normalizedPassword,
-                role
+                password: normalizedPassword
             });
             global.user=res.data;
             global.userId=res.data.userId;
             await saveSession(res.data);
-            if(res.data.role==='admin'){
-                navigation.replace('AdminScreen');
-            }
-            else{
-                navigation.replace('MainApp');
-            }
+            registerForDailyChallengePushNotifications(res.data.userId);
+            navigation.replace('MainApp');
         }
         catch(err){
             console.log(err);
@@ -79,25 +74,9 @@ export default function LoginScreen({navigation}){
                         Welcome back!
                     </Text>
                     <View style={{flexDirection:'row',alignItems:'center',justifyContent:'flex-start',marginBottom:15}}>
-                        {role==="student"?(
-                            <Text style={{color:'#6B7280', fontSize:14, fontFamily:'ManropeRegular'}}>
-                                Student Login
-                            </Text>
-                        ):(
-                            <Text style={{color:'#6B7280', fontSize:14, fontFamily:'ManropeRegular'}}>
-                                Admin Login
-                            </Text>
-                        )}
-                        <TouchableOpacity onPress={()=>{
-                            if(role==='student'){
-                                setRole('admin');
-                            }
-                            else{
-                                setRole('student');
-                            }
-                        }}>
-                            <ChevronRight size={20} color="#6B7280" style={{marginLeft:8}} />
-                        </TouchableOpacity>
+                        <Text style={{color:'#6B7280', fontSize:14, fontFamily:'ManropeRegular'}}>
+                            Student Login
+                        </Text>
                     </View>
 
                     <View style={{

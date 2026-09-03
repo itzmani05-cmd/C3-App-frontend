@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, TouchableOpacity} from 'react-native';
-import { ArrowLeft, LogOut } from 'lucide-react-native';
+import { ArrowLeft, Bell, LogOut } from 'lucide-react-native';
 import AppText from './AppText';
 
 const Header=({
@@ -9,7 +9,9 @@ const Header=({
     onBackPress,
     rightLabel,
     onRightPress,
-    rightLabelColor='#DC2626'
+    rightLabelColor='#DC2626',
+    onBellPress,
+    unreadCount=0,
 })=>{
     return (
         <View
@@ -51,31 +53,72 @@ const Header=({
             <AppText variant="extraBold" style={{fontSize:17,color:'#0F172A',textAlign:'center',letterSpacing:0.2}} numberOfLines={1}>
                 {title}
             </AppText>
-            {rightLabel==='Logout' ? (
-                <TouchableOpacity
-                    onPress={onRightPress}
-                    activeOpacity={0.7}
+            {(onBellPress || rightLabel) ? (
+                <View
                     style={{
                         position:'absolute',
                         right:16,
-                        bottom:16,
-                        minHeight:32,
-                        justifyContent:'center',
+                        bottom:14,
+                        flexDirection:'row',
                         alignItems:'center',
-                        paddingHorizontal:12,
-                        borderRadius:999,
-                        backgroundColor:'#FEF2F2',
-                        borderWidth:1,
-                        borderColor:'#FEE2E2',
                     }}
                 >
-                    <View style={{ alignItems: 'center',flexDirection:'row',gap:6 }}>
-                        <AppText variant="bold" style={{ fontSize: 12, color: rightLabelColor }}>
-                            {rightLabel}
-                        </AppText>
-                        <LogOut size={14} color={rightLabelColor} />
-                    </View>
-                </TouchableOpacity>
+                    {onBellPress ? (
+                        <TouchableOpacity
+                            onPress={onBellPress}
+                            activeOpacity={0.7}
+                            style={{
+                                width:36,
+                                height:36,
+                                borderRadius:18,
+                                backgroundColor:'#F3F4F6',
+                                justifyContent:'center',
+                                alignItems:'center',
+                                marginRight: rightLabel ? 10 : 0,
+                            }}
+                        >
+                            <Bell size={17} color="#374151" />
+                            {unreadCount > 0 ? (
+                                <View
+                                    style={{
+                                        position:'absolute',
+                                        top:4,
+                                        right:5,
+                                        width:9,
+                                        height:9,
+                                        borderRadius:5,
+                                        backgroundColor:'#DC2626',
+                                        borderWidth:1.5,
+                                        borderColor:'#FFFFFF',
+                                    }}
+                                />
+                            ) : null}
+                        </TouchableOpacity>
+                    ) : null}
+                    {rightLabel ? (
+                        <TouchableOpacity
+                            onPress={onRightPress}
+                            activeOpacity={0.7}
+                            style={{
+                                minHeight:32,
+                                justifyContent:'center',
+                                alignItems:'center',
+                                paddingHorizontal:12,
+                                borderRadius:999,
+                                backgroundColor: rightLabel === 'Logout' ? '#FEF2F2' : '#EEF2FF',
+                                borderWidth:1,
+                                borderColor: rightLabel === 'Logout' ? '#FEE2E2' : '#E0E7FF',
+                            }}
+                        >
+                            <View style={{ alignItems: 'center',flexDirection:'row',gap:6 }}>
+                                <AppText variant="bold" style={{ fontSize: 12, color: rightLabelColor }}>
+                                    {rightLabel}
+                                </AppText>
+                                {rightLabel === 'Logout' ? <LogOut size={14} color={rightLabelColor} /> : null}
+                            </View>
+                        </TouchableOpacity>
+                    ) : null}
+                </View>
             ) : null}
         </View>
     )

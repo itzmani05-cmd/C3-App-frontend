@@ -257,14 +257,20 @@ function QuestionReviewCard({ question, index, answer }) {
   );
 }
 
-function LockedReviewCard() {
+function LockedReviewCard({ attemptNumber, maxAttempts }) {
+  const attemptsLeft = typeof attemptNumber === 'number' && typeof maxAttempts === 'number'
+    ? Math.max(0, maxAttempts - attemptNumber)
+    : null;
+
   return (
     <View style={lockedCardStyle}>
       <AppText variant="bold" style={lockedCardTitleStyle}>
         Detailed review is locked
       </AppText>
       <AppText style={lockedCardMessageStyle}>
-        Pass this quiz to unlock the full answer review and explanations. Current pass mark: 80%.
+        {attemptsLeft !== null && attemptsLeft > 0
+          ? `Pass this quiz (80%+) to unlock the full answer review now, or it unlocks automatically after ${attemptsLeft} more attempt${attemptsLeft === 1 ? '' : 's'}.`
+          : 'Pass this quiz to unlock the full answer review and explanations. Current pass mark: 80%.'}
       </AppText>
     </View>
   );
@@ -292,6 +298,8 @@ export default function ResultScreen({ route, navigation }) {
   const attemptedCount = answers.length;
   const passed =
     typeof result?.passed === 'boolean' ? result.passed : percentage >= PASS_PERCENTAGE;
+  const reviewUnlocked =
+    typeof result?.reviewUnlocked === 'boolean' ? result.reviewUnlocked : passed;
   const quizLabel = subtopicName || topicName || 'Quiz';
   const pathLabel = unitName ? `${unitName} > ${topicName || quizLabel}` : quizLabel;
   const answersByQuestionId = answers.reduce((acc, item) => {
@@ -430,7 +438,7 @@ export default function ResultScreen({ route, navigation }) {
           <StatCard label="Attempted" value={`${attemptedCount}`} accentColor="#111827" />
         </View>
 
-        {passed ? (
+        {reviewUnlocked ? (
           <View style={sectionWrapStyle}>
             <SectionHeader
               title="Answer Review"
@@ -446,7 +454,7 @@ export default function ResultScreen({ route, navigation }) {
             ))}
           </View>
         ) : (
-          <LockedReviewCard />
+          <LockedReviewCard attemptNumber={result?.attemptNumber} maxAttempts={result?.maxAttempts} />
         )}
 
         <View style={actionWrapStyle}>

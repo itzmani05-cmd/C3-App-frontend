@@ -17,11 +17,18 @@ import TopicsScreen from './src/screens/TopicsScreen';
 import TimeUpScreen from './src/screens/TimeUpScreen';
 import QuestionsScreen from './src/screens/QuestionsScreen';
 import ResultScreen from './src/screens/ResultScreen';
-import AdminScreen from './src/screens/AdminScreen';
-import StudentProgress from './src/screens/StudentProgress';
+import DailyChallengeScreen from './src/screens/DailyChallengeScreen';
+import DailyChallengeAttemptScreen from './src/screens/DailyChallengeAttemptScreen';
+import DailyChallengeResultScreen from './src/screens/DailyChallengeResultScreen';
+import DailyChallengeReviewScreen from './src/screens/DailyChallengeReviewScreen';
+import NotificationsScreen from './src/screens/NotificationsScreen';
+import DailyChallengeHistoryScreen from './src/screens/DailyChallengeHistoryScreen';
+import DailyChallengeProgressScreen from './src/screens/DailyChallengeProgressScreen';
+import DailyChallengeLeaderboardScreen from './src/screens/DailyChallengeLeaderboardScreen';
 import { API_BASE_URL } from './src/config/api';
 import { applyGlobalTypographyDefaults } from './src/theme/typography';
 import { getSession } from './src/utils/authStorage';
+import { registerForDailyChallengePushNotifications } from './src/utils/pushNotifications';
 
 const Stack=createNativeStackNavigator();
 
@@ -69,7 +76,8 @@ export default function App() {
       if (session?.userId) {
         global.user = session;
         global.userId = session.userId;
-        setInitialRoute(session.role === 'admin' ? 'AdminScreen' : 'MainApp');
+        setInitialRoute('MainApp');
+        registerForDailyChallengePushNotifications(session.userId);
       }
       setSessionChecked(true);
     }
@@ -104,8 +112,14 @@ export default function App() {
         <Stack.Screen name="QuestionsScreen" component={QuestionsScreen} />
         <Stack.Screen name="TimeUpScreen" component={TimeUpScreen}/> 
         <Stack.Screen name="ResultScreen" component={ResultScreen}/>
-        <Stack.Screen name="AdminScreen" component={AdminScreen}/>
-        <Stack.Screen name="StudentProgress" component={StudentProgress}/>
+        <Stack.Screen name="DailyChallengeScreen" component={DailyChallengeScreen}/>
+        <Stack.Screen name="DailyChallengeAttemptScreen" component={DailyChallengeAttemptScreen}/>
+        <Stack.Screen name="DailyChallengeResultScreen" component={DailyChallengeResultScreen}/>
+        <Stack.Screen name="DailyChallengeReviewScreen" component={DailyChallengeReviewScreen}/>
+        <Stack.Screen name="NotificationsScreen" component={NotificationsScreen}/>
+        <Stack.Screen name="DailyChallengeHistoryScreen" component={DailyChallengeHistoryScreen}/>
+        <Stack.Screen name="DailyChallengeProgressScreen" component={DailyChallengeProgressScreen}/>
+        <Stack.Screen name="DailyChallengeLeaderboardScreen" component={DailyChallengeLeaderboardScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
     
