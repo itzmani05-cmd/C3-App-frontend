@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -12,7 +13,7 @@ import QuestionImage from '../components/QuestionImage';
 import BilingualText from '../components/BilingualText';
 import AppText from '../components/AppText';
 import { API_BASE_URL } from '../config/api';
-import { getOptionText, normalizeQuestionData, getCorrectOptionIndex } from '../utils/questionFormat';
+import { getCorrectOptionIndex, getOptionText, normalizeQuestionData } from '../utils/questionFormat';
 
 const QUIZ_DURATION_SECONDS = 1350;
 
@@ -23,6 +24,90 @@ const cardShadow = {
   shadowRadius: 10,
   elevation: 2,
 };
+
+function MultipleChoiceOptions({ q, selectedIndexes, onToggle }) {
+  return (
+    <>
+      {Array.isArray(q.options) &&
+        q.options.map((opt, idx) => {
+          const isSelected = selectedIndexes.includes(idx);
+          const optionLabel = String.fromCharCode(65 + idx);
+
+          return (
+            <TouchableOpacity
+              key={idx}
+              onPress={() => onToggle(q._id, idx)}
+              activeOpacity={0.75}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                padding: 12,
+                borderRadius: 12,
+                borderWidth: 1,
+                marginBottom: 10,
+                borderColor: isSelected ? "#93C5FD" : "#E5E7EB",
+                backgroundColor: isSelected ? "#EFF6FF" : "#FFFFFF",
+              }}
+            >
+              <View
+                style={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: 6,
+                  borderWidth: 2,
+                  borderColor: isSelected ? "#2563EB" : "#D1D5DB",
+                  backgroundColor: isSelected ? "#2563EB" : "#FFFFFF",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 10,
+                }}
+              >
+                {isSelected && (
+                  <AppText variant="bold" style={{ color: "#FFFFFF", fontSize: 13 }}>
+                    ✓
+                  </AppText>
+                )}
+              </View>
+
+              <AppText variant="semiBold" style={{ width: 20, color: "#374151", fontSize: 14 }}>
+                {optionLabel}.
+              </AppText>
+
+              <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: "#374151" }}>
+                {getOptionText(opt)}
+              </BilingualText>
+            </TouchableOpacity>
+          );
+        })}
+      <AppText style={{ fontSize: 12, color: "#6B7280", marginTop: 2, marginBottom: 4 }}>
+        Select all that apply.
+      </AppText>
+    </>
+  );
+}
+
+function NumericalAnswerInput({ value, onChange }) {
+  return (
+    <View style={{ marginTop: 4 }}>
+      <TextInput
+        value={value}
+        onChangeText={onChange}
+        placeholder="Enter your answer"
+        placeholderTextColor="#9CA3AF"
+        keyboardType="numeric"
+        style={{
+          borderWidth: 1,
+          borderColor: "#E5E7EB",
+          borderRadius: 12,
+          padding: 12,
+          fontSize: 15,
+          color: "#0F172A",
+          backgroundColor: "#FFFFFF",
+        }}
+      />
+    </View>
+  );
+}
 
 export default function QuestionsScreen({ route, navigation }) {
   const { topicId, subtopicId, topicName, subtopicName, unitName } = route.params || {};
@@ -42,6 +127,16 @@ export default function QuestionsScreen({ route, navigation }) {
 
   const answerMap = answers.reduce((acc, item) => {
     acc[item.questionId] = item.selectedOptionIndex;
+    return acc;
+  }, {});
+
+  const multiAnswerMap = answers.reduce((acc, item) => {
+    acc[item.questionId] = item.selectedOptionIndexes || [];
+    return acc;
+  }, {});
+
+  const numericalAnswerMap = answers.reduce((acc, item) => {
+    acc[item.questionId] = item.selectedNumericalAnswer || '';
     return acc;
   }, {});
 
@@ -204,6 +299,49 @@ export default function QuestionsScreen({ route, navigation }) {
     });
   };
 
+  const handleToggleMultiOption = (questionId, optionIndex) => {
+    setAnswers(prev => {
+      const existing = prev.find(a => a.questionId === questionId);
+      const currentSelected = existing?.selectedOptionIndexes || [];
+      const nextSelected = currentSelected.includes(optionIndex)
+        ? currentSelected.filter(i => i !== optionIndex)
+        : [...currentSelected, optionIndex];
+
+      const updated = existing
+        ? prev.map(a => (a.questionId === questionId ? { ...a, selectedOptionIndexes: nextSelected } : a))
+        : [...prev, { questionId, selectedOptionIndexes: nextSelected }];
+
+      answersRef.current = updated;
+
+      if (sessionId) {
+        AsyncStorage.setItem(
+          `quiz_${sessionId}_answers`,
+          JSON.stringify(updated)
+        );
+      }
+      return updated;
+    });
+  };
+
+  const handleNumericalChange = (questionId, text) => {
+    setAnswers(prev => {
+      const existing = prev.find(a => a.questionId === questionId);
+      const updated = existing
+        ? prev.map(a => (a.questionId === questionId ? { ...a, selectedNumericalAnswer: text } : a))
+        : [...prev, { questionId, selectedNumericalAnswer: text }];
+
+      answersRef.current = updated;
+
+      if (sessionId) {
+        AsyncStorage.setItem(
+          `quiz_${sessionId}_answers`,
+          JSON.stringify(updated)
+        );
+      }
+      return updated;
+    });
+  };
+
   const submitQuiz = async (finalAnswers, isTimedOut = false) => {
     setSubmitting(true);
 
@@ -231,7 +369,9 @@ export default function QuestionsScreen({ route, navigation }) {
       // Filter out attempt tracking fields before sending to ResultScreen
       const cleanAnswers = finalAnswers.map(a => ({
         questionId: a.questionId,
-        selectedOptionIndex: a.selectedOptionIndex
+        selectedOptionIndex: a.selectedOptionIndex,
+        selectedOptionIndexes: a.selectedOptionIndexes,
+        selectedNumericalAnswer: a.selectedNumericalAnswer,
       }));
 
       navigation.replace('ResultScreen', {
@@ -301,9 +441,15 @@ export default function QuestionsScreen({ route, navigation }) {
       </View>
     );
   }
-  const pendingQuestions = questions.filter(
-    q => answerMap[q._id] === undefined
-  );
+  const pendingQuestions = questions.filter(q => {
+    if (q.answerType === 'multiple') {
+      return (multiAnswerMap[q._id] || []).length === 0;
+    }
+    if (q.answerType === 'numerical') {
+      return !numericalAnswerMap[q._id];
+    }
+    return answerMap[q._id] === undefined;
+  });
 
   const formatQuestionLines = (text) => {
     if (!text) return [];
@@ -464,110 +610,125 @@ return (
               <QuestionImage source={q.questionImage} />
             )}
 
-            {Array.isArray(q.options) &&
-              q.options.map((opt, idx) => {
-                const isSelected = answerMap[q._id] === idx;
-                const attempts = attemptsMap[q._id] || 0;
-                const isRevealed = revealedAnswersMap[q._id];
-                const correctIndex = getCorrectOptionIndex(q);
-                const isCorrectOption = idx === correctIndex;
-                const isDisabled = attempts >= 3;
+            {q.answerType === 'multiple' ? (
+              <MultipleChoiceOptions
+                q={q}
+                selectedIndexes={multiAnswerMap[q._id] || []}
+                onToggle={handleToggleMultiOption}
+              />
+            ) : q.answerType === 'numerical' ? (
+              <NumericalAnswerInput
+                value={numericalAnswerMap[q._id] || ''}
+                onChange={(text) => handleNumericalChange(q._id, text)}
+              />
+            ) : (
+              <>
+                {Array.isArray(q.options) &&
+                  q.options.map((opt, idx) => {
+                    const isSelected = answerMap[q._id] === idx;
+                    const attempts = attemptsMap[q._id] || 0;
+                    const isRevealed = revealedAnswersMap[q._id];
+                    const correctIndex = getCorrectOptionIndex(q);
+                    const isCorrectOption = idx === correctIndex;
+                    const isDisabled = attempts >= 3;
 
-                const optionLabel = String.fromCharCode(65 + idx);
+                    const optionLabel = String.fromCharCode(65 + idx);
 
-                // Determine colors based on state
-                let borderColor = "#E5E7EB";
-                let backgroundColor = "#FFFFFF";
-                let opacity = 1;
+                    // Determine colors based on state
+                    let borderColor = "#E5E7EB";
+                    let backgroundColor = "#FFFFFF";
+                    let opacity = 1;
 
-                if (isDisabled && isCorrectOption) {
-                  // Show correct answer in green when revealed
-                  borderColor = "#86EFAC";
-                  backgroundColor = "#F0FDF4";
-                } else if (isSelected) {
-                  borderColor = "#93C5FD";
-                  backgroundColor = "#EFF6FF";
-                } else if (isDisabled && isRevealed) {
-                  // Disable other options after reveal
-                  opacity = 0.5;
-                }
+                    if (isDisabled && isCorrectOption) {
+                      // Show correct answer in green when revealed
+                      borderColor = "#86EFAC";
+                      backgroundColor = "#F0FDF4";
+                    } else if (isSelected) {
+                      borderColor = "#93C5FD";
+                      backgroundColor = "#EFF6FF";
+                    } else if (isDisabled && isRevealed) {
+                      // Disable other options after reveal
+                      opacity = 0.5;
+                    }
 
-                return (
-                  <TouchableOpacity
-                    key={idx}
-                    onPress={() => !isDisabled && handleSelect(q._id, idx)}
-                    disabled={isDisabled}
-                    activeOpacity={0.75}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      padding: 12,
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      marginBottom: 10,
-                      borderColor: borderColor,
-                      backgroundColor: backgroundColor,
-                      opacity: opacity,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 14,
-                        backgroundColor: isDisabled && isCorrectOption ? "#16A34A" : isSelected ? "#2563EB" : "#D1D5DB",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginRight: 10,
-                      }}
-                    >
-                      <AppText variant="bold" style={{ color: "#FFFFFF", fontSize: 13 }}>
-                        {optionLabel}
-                      </AppText>
-                    </View>
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        onPress={() => !isDisabled && handleSelect(q._id, idx)}
+                        disabled={isDisabled}
+                        activeOpacity={0.75}
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          padding: 12,
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          marginBottom: 10,
+                          borderColor: borderColor,
+                          backgroundColor: backgroundColor,
+                          opacity: opacity,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            backgroundColor: isDisabled && isCorrectOption ? "#16A34A" : isSelected ? "#2563EB" : "#D1D5DB",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            marginRight: 10,
+                          }}
+                        >
+                          <AppText variant="bold" style={{ color: "#FFFFFF", fontSize: 13 }}>
+                            {optionLabel}
+                          </AppText>
+                        </View>
 
-                    {/* Option Text */}
-                    <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: "#374151" }}>
-                      {getOptionText(opt)}
-                    </BilingualText>
-                  </TouchableOpacity>
-                );
-              })}
+                        {/* Option Text */}
+                        <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: "#374151" }}>
+                          {getOptionText(opt)}
+                        </BilingualText>
+                      </TouchableOpacity>
+                    );
+                  })}
 
-              {/* Show attempt counter and message */}
-              {(() => {
-                const attempts = attemptsMap[q._id] || 0;
-                const isRevealed = revealedAnswersMap[q._id];
-                if (attempts > 0) {
-                  return (
-                    <View style={{
-                      marginTop: 10,
-                      padding: 10,
-                      borderRadius: 10,
-                      backgroundColor: attempts >= 3 ? "#F0FDF4" : attempts === 2 ? "#FEF2F2" : "#F8FAFC",
-                      borderWidth: 1,
-                      borderColor: attempts >= 3 ? "#86EFAC" : attempts === 2 ? "#FECACA" : "#E5E7EB",
-                    }}>
-                      <AppText variant="semiBold" style={{
-                        fontSize: 12,
-                        color: attempts >= 3 ? "#16A34A" : attempts === 2 ? "#DC2626" : "#6B7280",
-                      }}>
-                        Attempts: {attempts}/3
-                      </AppText>
-                      {isRevealed && (
-                        <AppText variant="semiBold" style={{
-                          fontSize: 12,
-                          color: "#16A34A",
-                          marginTop: 4,
+                  {/* Show attempt counter and message */}
+                  {(() => {
+                    const attempts = attemptsMap[q._id] || 0;
+                    const isRevealed = revealedAnswersMap[q._id];
+                    if (attempts > 0) {
+                      return (
+                        <View style={{
+                          marginTop: 10,
+                          padding: 10,
+                          borderRadius: 10,
+                          backgroundColor: attempts >= 3 ? "#F0FDF4" : attempts === 2 ? "#FEF2F2" : "#F8FAFC",
+                          borderWidth: 1,
+                          borderColor: attempts >= 3 ? "#86EFAC" : attempts === 2 ? "#FECACA" : "#E5E7EB",
                         }}>
-                          ✓ Correct answer revealed
-                        </AppText>
-                      )}
-                    </View>
-                  );
-                }
-                return null;
-              })()}
+                          <AppText variant="semiBold" style={{
+                            fontSize: 12,
+                            color: attempts >= 3 ? "#16A34A" : attempts === 2 ? "#DC2626" : "#6B7280",
+                          }}>
+                            Attempts: {attempts}/3
+                          </AppText>
+                          {isRevealed && (
+                            <AppText variant="semiBold" style={{
+                              fontSize: 12,
+                              color: "#16A34A",
+                              marginTop: 4,
+                            }}>
+                              ✓ Correct answer revealed
+                            </AppText>
+                          )}
+                        </View>
+                      );
+                    }
+                    return null;
+                  })()}
+              </>
+            )}
           </View>
         ))
       ) : (

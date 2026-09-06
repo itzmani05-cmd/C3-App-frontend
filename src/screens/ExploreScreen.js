@@ -7,15 +7,20 @@ import { useFocusEffect } from '@react-navigation/native';
 import { fetchLearningPath as loadLearningPath } from '../utils/learningPathApi';
 import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
+import useSelectedExam from '../hooks/useSelectedExam';
+import ExamPicker from '../components/ExamPicker';
 
 export default function ExploreScreen ({navigation}) {
 
   const [units,setUnits]=useState([]);
   const [loading,setLoading]=useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const { loading: examLoading, exams, selectedExamId, needsSelection, selectExam, clearSelectedExam } = useSelectedExam();
 
-  const fetchUnitsFallback = useCallback(async () => {
-    const res = await axios.get(`${API_BASE_URL}/api/content/units`);
+  const fetchUnitsFallback = useCallback(async (examId) => {
+    const res = await axios.get(`${API_BASE_URL}/api/content/units`, {
+      params: examId ? { examId } : {},
+    });
     const plainUnits = Array.isArray(res.data) ? res.data : [];
 
     setUnits(
@@ -27,23 +32,23 @@ export default function ExploreScreen ({navigation}) {
     );
   }, []);
 
-  const fetchLearningPath = useCallback(async () => {
+  const fetchLearningPath = useCallback(async (examId) => {
     const userId = global.userId || global.user?.userId;
 
     try {
       setLoading(true);
-      const learningPath = await loadLearningPath(userId ? { userid: userId } : {});
+      const learningPath = await loadLearningPath(userId ? { userid: userId } : {}, examId);
       const nextUnits = Array.isArray(learningPath?.units) ? learningPath.units : [];
 
       if (nextUnits.length > 0) {
         setUnits(nextUnits);
       } else {
-        await fetchUnitsFallback();
+        await fetchUnitsFallback(examId);
       }
     } catch (err) {
       console.log('Learning path fetch error:', err);
       try {
-        await fetchUnitsFallback();
+        await fetchUnitsFallback(examId);
       } catch (fallbackErr) {
         console.log('Units fallback fetch error:', fallbackErr);
         setUnits([]);
@@ -55,9 +60,14 @@ export default function ExploreScreen ({navigation}) {
 
   useFocusEffect(
     useCallback(() => {
-      fetchLearningPath();
-    }, [fetchLearningPath])
+      if (examLoading || needsSelection) return;
+      fetchLearningPath(selectedExamId);
+    }, [fetchLearningPath, examLoading, needsSelection, selectedExamId])
   );
+
+  if (!examLoading && needsSelection) {
+    return <ExamPicker exams={exams} onSelect={selectExam} />;
+  }
 
   const handleUnitPress = (unit) => {
     navigation.navigate("TopicsScreen",{unitId:unit._id,unitName:unit.name});
@@ -66,10 +76,28 @@ export default function ExploreScreen ({navigation}) {
 
   return (
     <View style={{flex:1,backgroundColor:'#F8FAFC'}}>
-      <Header 
+      <Header
         title="Explore Units"
         showBack={true}
       />
+      {exams.length > 1 ? (
+        <TouchableOpacity
+          onPress={clearSelectedExam}
+          style={{
+            marginTop: 10,
+            marginHorizontal: 16,
+            alignSelf: 'flex-start',
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 999,
+            backgroundColor: '#EEF2FF',
+          }}
+        >
+          <Text style={{ fontFamily: 'ManropeSemiBold', fontSize: 12, color: '#4F46E5' }}>
+            {exams.find((e) => e._id === selectedExamId)?.name || 'Exam'} · Switch
+          </Text>
+        </TouchableOpacity>
+      ) : null}
        <View style={{ marginTop: 10 }}>
         <SearchBar
           value={searchQuery}

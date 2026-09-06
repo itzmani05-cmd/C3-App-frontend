@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from '../screens/HomeScreen';
 import ExploreScreen from '../screens/ExploreScreen';
+import DailyChallengeScreen from '../screens/DailyChallengeScreen';
+import DailyChallengeUnitsScreen from '../screens/DailyChallengeUnitsScreen';
 import ProfileStack from './ProfileStack';
 import { TAB_BAR_LABEL_STYLE } from '../theme/typography';
 
@@ -24,6 +26,12 @@ export default function TabNavigation({route}){
               break;
             case 'Practice':
               iconName = focused ? 'search' : 'search-outline';
+              break;
+            case 'Today':
+              iconName = focused ? 'flash' : 'flash-outline';
+              break;
+            case 'Daily':
+              iconName = focused ? 'calendar' : 'calendar-outline';
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
@@ -52,6 +60,8 @@ export default function TabNavigation({route}){
     >
       <Tab.Screen name="Home" component={HomeScreen} initialParams={{userId}} />
       <Tab.Screen name="Practice" component={ExploreScreen} />
+      <Tab.Screen name="Today" component={DailyChallengeScreen} />
+      <Tab.Screen name="Daily" component={DailyChallengeUnitsScreen} options={{ tabBarLabel: 'Archive' }} />
       {/* <Tab.Screen name="Analytics" component={LearningScreen} /> */}
       <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>

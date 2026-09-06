@@ -6,6 +6,8 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { API_BASE_URL } from '../config/api';
 import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
+import useSelectedExam from '../hooks/useSelectedExam';
+import ExamPicker from '../components/ExamPicker';
 
 function formatDateTime(value) {
   if (!value) return '—';
@@ -24,6 +26,7 @@ export default function DailyChallengeScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [challenge, setChallenge] = useState(null);
   const [error, setError] = useState(null);
+  const { loading: examLoading, exams, selectedExamId, needsSelection, selectExam, clearSelectedExam } = useSelectedExam();
 
   const fetchToday = useCallback(async (isRefreshing = false) => {
     const userId = global.userId || global.user?.userId;
@@ -39,6 +42,7 @@ export default function DailyChallengeScreen({ navigation }) {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/daily-challenge/today`, {
         headers: { userid: userId },
+        params: selectedExamId ? { examId: selectedExamId } : {},
       });
       setChallenge(res.data?.challenge || null);
       setError(null);
@@ -49,13 +53,18 @@ export default function DailyChallengeScreen({ navigation }) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [selectedExamId]);
 
   useEffect(() => {
+    if (examLoading || needsSelection) return;
     fetchToday();
     const unsubscribe = navigation.addListener('focus', () => fetchToday());
     return unsubscribe;
-  }, [fetchToday, navigation]);
+  }, [fetchToday, navigation, examLoading, needsSelection]);
+
+  if (!examLoading && needsSelection) {
+    return <ExamPicker exams={exams} onSelect={selectExam} />;
+  }
 
   const startOrContinue = () => {
     navigation.navigate('DailyChallengeAttemptScreen', { challengeId: challenge.challengeId });
@@ -71,7 +80,7 @@ export default function DailyChallengeScreen({ navigation }) {
   if (loading) {
     return (
       <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
-        <Header title="C3 Daily Challenge" showBack onBackPress={() => navigation.goBack()} />
+        <Header title="C3 Daily Challenge" showBack={navigation.canGoBack()} onBackPress={() => navigation.goBack()} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" color={COLORS.brand600} />
         </View>
@@ -82,6 +91,24 @@ export default function DailyChallengeScreen({ navigation }) {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
       <Header title="C3 Daily Challenge" showBack onBackPress={() => navigation.goBack()} />
+      {exams.length > 1 ? (
+        <TouchableOpacity
+          onPress={clearSelectedExam}
+          style={{
+            marginTop: 10,
+            marginHorizontal: 16,
+            alignSelf: 'flex-start',
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 999,
+            backgroundColor: COLORS.brand50,
+          }}
+        >
+          <AppText variant="semiBold" style={{ fontSize: 12, color: COLORS.brand600 }}>
+            {exams.find((e) => e._id === selectedExamId)?.name || 'Exam'} · Switch
+          </AppText>
+        </TouchableOpacity>
+      ) : null}
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchToday(true)} />}
@@ -146,36 +173,37 @@ export default function DailyChallengeScreen({ navigation }) {
         )}
 
         <View style={linksRowStyle}>
-          <TouchableOpacity
-            style={linkCardStyle}
-            activeOpacity={0.8}
+          <QuickLinkCard
+            icon="📊"
+            label="My Progress"
             onPress={() => navigation.navigate('DailyChallengeProgressScreen')}
-          >
-            <AppText variant="bold" style={{ fontSize: 13, color: COLORS.brand600 }}>
-              📊 My Progress
-            </AppText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={linkCardStyle}
-            activeOpacity={0.8}
+          />
+          <QuickLinkCard
+            icon="🗓"
+            label="History"
             onPress={() => navigation.navigate('DailyChallengeHistoryScreen')}
-          >
-            <AppText variant="bold" style={{ fontSize: 13, color: COLORS.brand600 }}>
-              🗓 History
-            </AppText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={linkCardStyle}
-            activeOpacity={0.8}
+          />
+          <QuickLinkCard
+            icon="🏆"
+            label="Leaderboard"
             onPress={() => navigation.navigate('DailyChallengeLeaderboardScreen')}
-          >
-            <AppText variant="bold" style={{ fontSize: 13, color: COLORS.brand600 }}>
-              🏆 Leaderboard
-            </AppText>
-          </TouchableOpacity>
+          />
         </View>
       </ScrollView>
     </View>
+  );
+}
+
+function QuickLinkCard({ icon, label, onPress }) {
+  return (
+    <TouchableOpacity style={linkCardStyle} activeOpacity={0.8} onPress={onPress}>
+      <View style={linkIconBadgeStyle}>
+        <AppText style={{ fontSize: 18 }}>{icon}</AppText>
+      </View>
+      <AppText variant="semiBold" style={{ marginTop: 8, fontSize: 12, color: COLORS.slate700, textAlign: 'center' }}>
+        {label}
+      </AppText>
+    </TouchableOpacity>
   );
 }
 
@@ -208,19 +236,27 @@ const rowStyle = {
 
 const linksRowStyle = {
   flexDirection: 'row',
-  flexWrap: 'wrap',
-  marginTop: 14,
-  gap: 12,
+  marginTop: 16,
 };
 
 const linkCardStyle = {
-  flexGrow: 1,
-  flexBasis: '30%',
-  backgroundColor: COLORS.brand50,
+  flex: 1,
+  marginHorizontal: 4,
+  backgroundColor: COLORS.white,
   borderRadius: RADII.xxl,
-  paddingVertical: 14,
+  paddingVertical: 16,
   paddingHorizontal: 6,
   alignItems: 'center',
   borderWidth: 1,
-  borderColor: COLORS.brand100,
+  borderColor: COLORS.slate200,
+  ...SHADOWS.sm,
+};
+
+const linkIconBadgeStyle = {
+  width: 40,
+  height: 40,
+  borderRadius: 20,
+  backgroundColor: COLORS.brand50,
+  alignItems: 'center',
+  justifyContent: 'center',
 };

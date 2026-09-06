@@ -9,9 +9,9 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import Header from '../components/Header';
-import SearchBar from '../components/SearchBar';
 import DailyChallengeCard from '../components/DailyChallengeCard';
 import { API_BASE_URL } from '../config/api';
+import { clearSession } from '../utils/authStorage';
 
 const cardShadow = {
   shadowColor: '#0F172A',
@@ -21,26 +21,6 @@ const cardShadow = {
   elevation: 2,
 };
 
-function formatPercent(value) {
-  return `${Math.round(value || 0)}%`;
-}
-
-function formatDateTime(value) {
-  if (!value) {
-    return 'No attempts yet';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return 'No attempts yet';
-  }
-
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-  });
-}
-
 function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return 'Good morning';
@@ -48,42 +28,10 @@ function getGreeting() {
   return 'Good evening';
 }
 
-function StatCard({ label, value }) {
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 14,
-        padding: 14,
-        marginHorizontal: 4,
-        borderWidth: 1,
-        borderColor: '#E5E7EB',
-        ...cardShadow,
-      }}
-    >
-      <Text style={{ color: '#6B7280', fontFamily: 'ManropeMedium', fontSize: 12 }}>
-        {label}
-      </Text>
-      <Text
-        style={{
-          marginTop: 8,
-          color: '#2563EB',
-          fontFamily: 'ManropeExtraBold',
-          fontSize: 20,
-        }}
-      >
-        {value}
-      </Text>
-    </View>
-  );
-}
-
 export default function HomeScreen({ navigation }) {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchUnreadCount = async () => {
@@ -111,9 +59,10 @@ export default function HomeScreen({ navigation }) {
       {
         text: 'Logout',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
           global.userId = null;
           global.user = null;
+          await clearSession();
           const rootNavigation = navigation.getParent?.() || navigation;
           if (rootNavigation?.replace) {
             rootNavigation.replace('Login');
@@ -170,15 +119,6 @@ export default function HomeScreen({ navigation }) {
   }
 
   const user = dashboard?.user;
-  const stats = dashboard?.stats || {};
-  const recentActivity = (dashboard?.recentActivity || []).filter((item) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      (item.title || '').toLowerCase().includes(query) ||
-      (item.subtitle || '').toLowerCase().includes(query)
-    );
-  });
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
@@ -225,74 +165,33 @@ export default function HomeScreen({ navigation }) {
 
         <DailyChallengeCard navigation={navigation} />
 
-        {dashboard ? (
-          <View style={{ marginTop: 14, paddingHorizontal: 12, flexDirection: 'row' }}>
-            <StatCard label="Avg. Score" value={formatPercent(stats.averageScore)} />
-            <StatCard label="Lessons Cleared" value={`${stats.lessonsCleared || 0}`} />
-            <StatCard label="Attempts" value={`${stats.totalAttempts || 0}`} />
-          </View>
-        ) : null}
-
-        <SearchBar value={searchQuery} onChangeText={setSearchQuery} placeholder="Search activity..." />
-
-      <View style={{ marginTop: 20, paddingHorizontal: 16 }}>
-        <Text style={{ color: '#0F172A', fontFamily: 'ManropeBold', fontSize: 18 }}>
-          Recent Activity
-        </Text>
-
-        {recentActivity.length === 0 ? (
-          <Text style={{ marginTop: 10, color: '#6B7280', fontFamily: 'ManropeRegular' }}>
-            Your recent quiz activity will appear here.
+        <View
+          style={{
+            marginTop: 12,
+            marginHorizontal: 16,
+            backgroundColor: '#FFFBEB',
+            borderRadius: 16,
+            padding: 14,
+            borderWidth: 1,
+            borderColor: '#FEF3C7',
+          }}
+        >
+          <Text style={{ color: '#92400E', fontFamily: 'ManropeBold', fontSize: 13 }}>
+            🔥 How streaks work
           </Text>
-        ) : (
-          recentActivity.slice(0, 4).map((item) => (
-            <View
-              key={item.id}
-              style={{
-                marginTop: 12,
-                backgroundColor: '#FFFFFF',
-                borderRadius: 14,
-                padding: 14,
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                ...cardShadow,
-              }}
-            >
-              <View style={{ flex: 1, marginRight: 12 }}>
-                <Text style={{ color: '#0F172A', fontFamily: 'ManropeBold' }}>{item.title}</Text>
-                <Text
-                  style={{
-                    marginTop: 4,
-                    color: '#6B7280',
-                    fontFamily: 'ManropeRegular',
-                    fontSize: 12,
-                  }}
-                >
-                  {item.subtitle}
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={{ color: '#2563EB', fontFamily: 'ManropeExtraBold', fontSize: 16 }}>
-                  {formatPercent(item.percentage)}
-                </Text>
-                <Text
-                  style={{
-                    marginTop: 4,
-                    color: item.isTimedOut ? '#DC2626' : '#6B7280',
-                    fontFamily: 'ManropeRegular',
-                    fontSize: 12,
-                  }}
-                >
-                  {item.isTimedOut ? 'Timed out' : formatDateTime(item.submittedAt)}
-                </Text>
-              </View>
-            </View>
-          ))
-        )}
-      </View>
+          <Text
+            style={{
+              marginTop: 4,
+              color: '#92400E',
+              fontFamily: 'ManropeRegular',
+              fontSize: 12,
+              lineHeight: 18,
+            }}
+          >
+            Complete the Daily Challenge to grow your streak by 1. Miss a day and it resets to
+            zero — so check in daily to keep it alive!
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );

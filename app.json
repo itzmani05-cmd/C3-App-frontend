@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "C³ Platform",
+    "name": "C³ EP",
     "slug": "c3-institute",
     "version": "2.0.0",
     "icon": "./assets/C3AppLogo.png",
@@ -22,7 +22,7 @@
       }
     },
     "extra": {
-      "API_URL": "https://c3-app-backend-2.onrender.com",
+      "API_URL": "https://c3-app-backend-3.onrender.com",
       "eas": {
         "projectId": "1595038e-2d1a-4827-9cfe-04079faedab6"
       }
@@ -44,7 +44,7 @@
         }
       ]
     ],
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.0.1",
     "updates": {
       "url": "https://u.expo.dev/1595038e-2d1a-4827-9cfe-04079faedab6"
     }

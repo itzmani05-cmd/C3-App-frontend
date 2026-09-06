@@ -4,6 +4,7 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import Header from '../components/Header';
 import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
+import { getMotivationalMessage } from '../utils/motivationalMessage';
 
 export default function DailyChallengeResultScreen({ route, navigation }) {
   const { data = {}, challengeId } = route.params || {};
@@ -14,10 +15,13 @@ export default function DailyChallengeResultScreen({ route, navigation }) {
     maxAttempts = 3,
     attemptsRemaining = 0,
     previousScore,
+    currentStreak = 0,
   } = data;
 
   const improvement =
     typeof previousScore === 'number' ? score - previousScore : null;
+  const percentage = totalQuestions ? (score / totalQuestions) * 100 : 0;
+  const motivationalMessage = getMotivationalMessage(percentage);
 
   const goHome = () => {
     navigation.navigate('MainApp');
@@ -39,6 +43,18 @@ export default function DailyChallengeResultScreen({ route, navigation }) {
           <AppText variant="extraBold" style={{ marginTop: 6, fontSize: 34, color: COLORS.brand600 }}>
             {score}/{totalQuestions}
           </AppText>
+
+          <AppText variant="semiBold" style={{ marginTop: 10, fontSize: 14, color: COLORS.slate700, textAlign: 'center' }}>
+            {motivationalMessage}
+          </AppText>
+
+          {currentStreak > 0 ? (
+            <View style={streakPillStyle}>
+              <AppText variant="bold" style={{ fontSize: 13, color: COLORS.warningText }}>
+                🔥 {currentStreak} Day Streak
+              </AppText>
+            </View>
+          ) : null}
 
           {typeof previousScore === 'number' ? (
             <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -96,6 +112,14 @@ const cardStyle = {
   borderWidth: 1,
   borderColor: COLORS.slate200,
   ...SHADOWS.lg,
+};
+
+const streakPillStyle = {
+  marginTop: 12,
+  backgroundColor: COLORS.warningSoft,
+  borderRadius: RADII.pill,
+  paddingHorizontal: 14,
+  paddingVertical: 6,
 };
 
 const noteBoxStyle = {

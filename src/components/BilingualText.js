@@ -88,15 +88,19 @@ export default function BilingualText({
   children,
   ...props
 }) {
-  const textContent = children;
+  // JSX with multiple {}-expressions/literals as children (e.g. `{letter}. {option}`) passes
+  // `children` as an array — String() on an array joins with commas ("A,. ,Watt"), so flatten
+  // it explicitly instead of relying on String() to do the right thing.
+  const textString = Array.isArray(children)
+    ? children.map((child) => (child == null ? '' : String(child))).join('')
+    : children == null
+      ? ''
+      : String(children);
 
   // If no text content, return empty
-  if (!textContent) {
+  if (!textString) {
     return <Text {...props} style={[{ fontFamily: FONT_FAMILY[variant] }, style]} />;
   }
-
-  // Convert to string if needed
-  const textString = String(textContent);
 
   // Check if text contains Tamil characters
   const hasTamil = TAMIL_REGEX.test(textString);

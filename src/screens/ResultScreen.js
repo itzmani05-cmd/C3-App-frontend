@@ -9,6 +9,7 @@ import { fetchNextLesson } from '../utils/learningPathApi';
 import {
   getCorrectOptionIndex,
   getOptionText,
+  isNumericalAnswerCorrect,
   normalizeQuestionData,
 } from '../utils/questionFormat';
 
@@ -40,8 +41,8 @@ function getResultTone(passed) {
       };
 }
 
-function getQuestionBadge(selectedIndex, correctIndex) {
-  if (selectedIndex === undefined) {
+function getQuestionBadgeGeneric(isAnswered, isCorrect) {
+  if (!isAnswered) {
     return {
       label: 'Skipped',
       textColor: '#6B7280',
@@ -49,7 +50,7 @@ function getQuestionBadge(selectedIndex, correctIndex) {
     };
   }
 
-  if (selectedIndex === correctIndex) {
+  if (isCorrect) {
     return {
       label: 'Correct',
       textColor: '#2563EB',
@@ -67,6 +68,39 @@ function getQuestionBadge(selectedIndex, correctIndex) {
 function getOptionTone(optionIndex, selectedIndex, correctIndex) {
   const isSelected = selectedIndex === optionIndex;
   const isCorrect = correctIndex === optionIndex;
+
+  if (isCorrect) {
+    return {
+      borderColor: '#93C5FD',
+      backgroundColor: '#EFF6FF',
+      textColor: '#1D4ED8',
+      hintText: isSelected ? 'Your answer' : 'Correct answer',
+      hintColor: '#2563EB',
+    };
+  }
+
+  if (isSelected) {
+    return {
+      borderColor: '#FCA5A5',
+      backgroundColor: '#FEF2F2',
+      textColor: '#B91C1C',
+      hintText: 'Your answer',
+      hintColor: '#DC2626',
+    };
+  }
+
+  return {
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    textColor: '#374151',
+    hintText: '',
+    hintColor: '#6B7280',
+  };
+}
+
+function getMultiOptionTone(optionIndex, selectedIndexes, correctIndexes) {
+  const isSelected = selectedIndexes.includes(optionIndex);
+  const isCorrect = correctIndexes.includes(optionIndex);
 
   if (isCorrect) {
     return {
@@ -182,37 +216,110 @@ function SummaryCard({
   );
 }
 
-function ReviewOptionRow({ option, optionIndex, selectedIndex, correctIndex, optionImage }) {
-  const optionTone = getOptionTone(optionIndex, selectedIndex, correctIndex);
-
+function ReviewOptionRow({ option, optionIndex, tone, optionImage }) {
   return (
     <View
       style={[
         optionRowStyle,
         {
-          borderColor: optionTone.borderColor,
-          backgroundColor: optionTone.backgroundColor,
+          borderColor: tone.borderColor,
+          backgroundColor: tone.backgroundColor,
         },
       ]}
     >
-      <BilingualText variant="medium" style={[optionTextStyle, { color: optionTone.textColor }]}>
+      <BilingualText variant="medium" style={[optionTextStyle, { color: tone.textColor }]}>
         {String.fromCharCode(65 + optionIndex)}. {getOptionText(option)}
       </BilingualText>
       <QuestionImage uri={optionImage} height={150} style={{ marginTop: 10 }} />
-      {optionTone.hintText ? (
-        <AppText variant="bold" style={[optionHintStyle, { color: optionTone.hintColor }]}>
-          {optionTone.hintText}
+      {tone.hintText ? (
+        <AppText variant="bold" style={[optionHintStyle, { color: tone.hintColor }]}>
+          {tone.hintText}
         </AppText>
       ) : null}
     </View>
   );
 }
 
+function NumericalAnswerReview({ selectedAnswer, correctAnswer, isCorrect }) {
+  return (
+    <View style={numericalReviewBoxStyle}>
+      <AppText variant="medium" style={numericalReviewLabelStyle}>
+        Your answer
+      </AppText>
+      <AppText
+        variant="bold"
+        style={[numericalReviewValueStyle, { color: isCorrect ? '#1D4ED8' : '#B91C1C' }]}
+      >
+        {selectedAnswer || 'Not answered'}
+      </AppText>
+      {!isCorrect ? (
+        <>
+          <AppText variant="medium" style={[numericalReviewLabelStyle, { marginTop: 10 }]}>
+            Correct answer
+          </AppText>
+          <AppText variant="bold" style={[numericalReviewValueStyle, { color: '#1D4ED8' }]}>
+            {correctAnswer}
+          </AppText>
+        </>
+      ) : null}
+    </View>
+  );
+}
+
 function QuestionReviewCard({ question, index, answer }) {
-  const selectedIndex = answer?.selectedOptionIndex;
-  const correctIndex = getCorrectOptionIndex(question);
-  const badge = getQuestionBadge(selectedIndex, correctIndex);
+  const answerType = question?.answerType || 'single';
   const questionKey = question?._id || index;
+
+  let isAnswered = false;
+  let isCorrect = false;
+  let optionsSection = null;
+
+  if (answerType === 'multiple') {
+    const selectedIndexes = Array.isArray(answer?.selectedOptionIndexes) ? answer.selectedOptionIndexes : [];
+    const correctIndexes = question?.correctOptionIndexes || [];
+    isAnswered = selectedIndexes.length > 0;
+    isCorrect =
+      isAnswered &&
+      selectedIndexes.length === correctIndexes.length &&
+      selectedIndexes.every((idx) => correctIndexes.includes(idx));
+
+    optionsSection = (question?.options || []).map((option, optionIndex) => (
+      <ReviewOptionRow
+        key={`${questionKey}-${optionIndex}`}
+        option={option}
+        optionIndex={optionIndex}
+        tone={getMultiOptionTone(optionIndex, selectedIndexes, correctIndexes)}
+        optionImage={question?.optionImages?.[optionIndex]}
+      />
+    ));
+  } else if (answerType === 'numerical') {
+    const selectedAnswer =
+      typeof answer?.selectedNumericalAnswer === 'string' ? answer.selectedNumericalAnswer.trim() : '';
+    const correctAnswer = question?.numericalAnswer || '';
+    isAnswered = selectedAnswer !== '';
+    isCorrect = isAnswered && isNumericalAnswerCorrect(selectedAnswer, correctAnswer);
+
+    optionsSection = (
+      <NumericalAnswerReview selectedAnswer={selectedAnswer} correctAnswer={correctAnswer} isCorrect={isCorrect} />
+    );
+  } else {
+    const selectedIndex = answer?.selectedOptionIndex;
+    const correctIndex = getCorrectOptionIndex(question);
+    isAnswered = selectedIndex !== undefined;
+    isCorrect = selectedIndex === correctIndex;
+
+    optionsSection = (question?.options || []).map((option, optionIndex) => (
+      <ReviewOptionRow
+        key={`${questionKey}-${optionIndex}`}
+        option={option}
+        optionIndex={optionIndex}
+        tone={getOptionTone(optionIndex, selectedIndex, correctIndex)}
+        optionImage={question?.optionImages?.[optionIndex]}
+      />
+    ));
+  }
+
+  const badge = getQuestionBadgeGeneric(isAnswered, isCorrect);
 
   return (
     <View style={questionCardStyle}>
@@ -229,16 +336,7 @@ function QuestionReviewCard({ question, index, answer }) {
 
       <QuestionImage uri={question?.questionImage} height={200} style={{ marginBottom: 14 }} />
 
-      {(question?.options || []).map((option, optionIndex) => (
-        <ReviewOptionRow
-          key={`${questionKey}-${optionIndex}`}
-          option={option}
-          optionIndex={optionIndex}
-          selectedIndex={selectedIndex}
-          correctIndex={correctIndex}
-          optionImage={question?.optionImages?.[optionIndex]}
-        />
-      ))}
+      {optionsSection}
 
       {question?.explanation || question?.explanationImage ? (
         <View style={explanationBoxStyle}>
@@ -648,6 +746,25 @@ const optionTextStyle = {
 const optionHintStyle = {
   marginTop: 6,
   fontSize: 12,
+};
+
+const numericalReviewBoxStyle = {
+  marginTop: 10,
+  padding: 14,
+  borderRadius: 12,
+  backgroundColor: '#F8FAFC',
+  borderWidth: 1,
+  borderColor: '#E5E7EB',
+};
+
+const numericalReviewLabelStyle = {
+  color: '#6B7280',
+  fontSize: 12,
+};
+
+const numericalReviewValueStyle = {
+  marginTop: 4,
+  fontSize: 16,
 };
 
 const explanationBoxStyle = {

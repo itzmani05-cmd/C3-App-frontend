@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
 import AppText from '../components/AppText';
 import BilingualText from '../components/BilingualText';
@@ -7,6 +7,66 @@ import Header from '../components/Header';
 import QuestionImage from '../components/QuestionImage';
 import { API_BASE_URL } from '../config/api';
 import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
+
+function MultipleChoiceOptions({ q, selectedIndexes, onToggle }) {
+  return (
+    <>
+      {(q.options || []).map((option, optionIndex) => {
+        const isSelected = selectedIndexes.includes(optionIndex);
+        return (
+          <TouchableOpacity
+            key={optionIndex}
+            onPress={() => onToggle(q.questionId, optionIndex)}
+            activeOpacity={0.75}
+            style={[optionRowStyle, isSelected ? optionSelectedStyle : null]}
+          >
+            <View
+              style={[
+                checkboxStyle,
+                isSelected ? { backgroundColor: COLORS.brand600, borderColor: COLORS.brand600 } : null,
+              ]}
+            >
+              {isSelected ? (
+                <AppText variant="bold" style={{ color: COLORS.white, fontSize: 13 }}>
+                  ✓
+                </AppText>
+              ) : null}
+            </View>
+            <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: COLORS.slate700 }}>
+              {option}
+            </BilingualText>
+            <QuestionImage uri={q.optionImages?.[optionIndex]} height={100} />
+          </TouchableOpacity>
+        );
+      })}
+      <AppText style={{ fontSize: 12, color: COLORS.slate500, marginTop: 6 }}>
+        Select all that apply.
+      </AppText>
+    </>
+  );
+}
+
+function NumericalAnswerInput({ value, onChange }) {
+  return (
+    <TextInput
+      value={value}
+      onChangeText={onChange}
+      placeholder="Enter your answer"
+      placeholderTextColor={COLORS.slate400}
+      keyboardType="numeric"
+      style={{
+        borderWidth: 1,
+        borderColor: COLORS.slate200,
+        borderRadius: RADII.xl,
+        padding: 12,
+        marginTop: 10,
+        fontSize: 15,
+        color: COLORS.slate900,
+        backgroundColor: COLORS.white,
+      }}
+    />
+  );
+}
 
 export default function DailyChallengeAttemptScreen({ route, navigation }) {
   const { challengeId } = route.params || {};
@@ -43,7 +103,27 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
 
   const handleSelect = (questionId, optionIndex) => {
     setAnswers((prev) => {
-      const updated = { ...prev, [questionId]: optionIndex };
+      const updated = { ...prev, [questionId]: { selectedOptionIndex: optionIndex } };
+      answersRef.current = updated;
+      return updated;
+    });
+  };
+
+  const handleToggleMultiOption = (questionId, optionIndex) => {
+    setAnswers((prev) => {
+      const current = prev[questionId]?.selectedOptionIndexes || [];
+      const next = current.includes(optionIndex)
+        ? current.filter((i) => i !== optionIndex)
+        : [...current, optionIndex];
+      const updated = { ...prev, [questionId]: { selectedOptionIndexes: next } };
+      answersRef.current = updated;
+      return updated;
+    });
+  };
+
+  const handleNumericalChange = (questionId, text) => {
+    setAnswers((prev) => {
+      const updated = { ...prev, [questionId]: { selectedNumericalAnswer: text } };
       answersRef.current = updated;
       return updated;
     });
@@ -53,10 +133,15 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
     setSubmitting(true);
     const userId = global.userId || global.user?.userId;
 
-    const responses = Object.keys(answersRef.current).map((questionId) => ({
-      questionId,
-      selectedOptionIndex: answersRef.current[questionId],
-    }));
+    const responses = Object.keys(answersRef.current).map((questionId) => {
+      const answer = answersRef.current[questionId] || {};
+      return {
+        questionId,
+        selectedOptionIndex: answer.selectedOptionIndex,
+        selectedOptionIndexes: answer.selectedOptionIndexes,
+        selectedNumericalAnswer: answer.selectedNumericalAnswer,
+      };
+    });
 
     try {
       const res = await axios.post(
@@ -139,27 +224,40 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
 
             <QuestionImage uri={q.questionImage} height={180} />
 
-            {(q.options || []).map((option, optionIndex) => {
-              const isSelected = answers[q.questionId] === optionIndex;
-              return (
-                <TouchableOpacity
-                  key={optionIndex}
-                  onPress={() => handleSelect(q.questionId, optionIndex)}
-                  activeOpacity={0.75}
-                  style={[optionRowStyle, isSelected ? optionSelectedStyle : null]}
-                >
-                  <View style={[badgeCircleStyle, isSelected ? { backgroundColor: COLORS.brand600 } : null]}>
-                    <AppText variant="bold" style={{ color: isSelected ? COLORS.white : COLORS.slate700, fontSize: 13 }}>
-                      {String.fromCharCode(65 + optionIndex)}
-                    </AppText>
-                  </View>
-                  <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: COLORS.slate700 }}>
-                    {option}
-                  </BilingualText>
-                  <QuestionImage uri={q.optionImages?.[optionIndex]} height={100} />
-                </TouchableOpacity>
-              );
-            })}
+            {q.answerType === 'multiple' ? (
+              <MultipleChoiceOptions
+                q={q}
+                selectedIndexes={answers[q.questionId]?.selectedOptionIndexes || []}
+                onToggle={handleToggleMultiOption}
+              />
+            ) : q.answerType === 'numerical' ? (
+              <NumericalAnswerInput
+                value={answers[q.questionId]?.selectedNumericalAnswer || ''}
+                onChange={(text) => handleNumericalChange(q.questionId, text)}
+              />
+            ) : (
+              (q.options || []).map((option, optionIndex) => {
+                const isSelected = answers[q.questionId]?.selectedOptionIndex === optionIndex;
+                return (
+                  <TouchableOpacity
+                    key={optionIndex}
+                    onPress={() => handleSelect(q.questionId, optionIndex)}
+                    activeOpacity={0.75}
+                    style={[optionRowStyle, isSelected ? optionSelectedStyle : null]}
+                  >
+                    <View style={[badgeCircleStyle, isSelected ? { backgroundColor: COLORS.brand600 } : null]}>
+                      <AppText variant="bold" style={{ color: isSelected ? COLORS.white : COLORS.slate700, fontSize: 13 }}>
+                        {String.fromCharCode(65 + optionIndex)}
+                      </AppText>
+                    </View>
+                    <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: COLORS.slate700 }}>
+                      {option}
+                    </BilingualText>
+                    <QuestionImage uri={q.optionImages?.[optionIndex]} height={100} />
+                  </TouchableOpacity>
+                );
+              })
+            )}
           </View>
         ))}
 
@@ -215,6 +313,18 @@ const badgeCircleStyle = {
   height: 28,
   borderRadius: 14,
   backgroundColor: COLORS.slate300,
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: 10,
+};
+
+const checkboxStyle = {
+  width: 24,
+  height: 24,
+  borderRadius: 6,
+  borderWidth: 2,
+  borderColor: COLORS.slate300,
+  backgroundColor: COLORS.white,
   justifyContent: 'center',
   alignItems: 'center',
   marginRight: 10,

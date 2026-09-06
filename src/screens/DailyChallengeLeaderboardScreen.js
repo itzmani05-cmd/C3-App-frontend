@@ -32,7 +32,10 @@ function LeaderboardRow({ entry }) {
         </AppText>
       </View>
 
-      <AppText variant="extraBold" style={{ fontSize: 16, color: COLORS.brand600 }}>
+      <AppText
+        variant="extraBold"
+        style={{ fontSize: 16, color: entry.totalScore < 0 ? COLORS.danger600 : COLORS.brand600 }}
+      >
         {entry.totalScore}
       </AppText>
     </View>

@@ -225,9 +225,11 @@ function applyProgressToTree(contentTree, progressDocs = []) {
   };
 }
 
-async function fetchLegacyLearningPath(headers = {}) {
+async function fetchLegacyLearningPath(headers = {}, examId) {
   const userId = headers?.userid;
-  const unitsRes = await axios.get(`${API_BASE_URL}/api/content/units`);
+  const unitsRes = await axios.get(`${API_BASE_URL}/api/content/units`, {
+    params: examId ? { examId } : {},
+  });
   const units = Array.isArray(unitsRes.data) ? unitsRes.data : [];
 
   const topicsNested = await Promise.all(
@@ -261,9 +263,12 @@ async function fetchLegacyLearningPath(headers = {}) {
   return applyProgressToTree(buildContentTree(units, topics, subtopics), progressDocs);
 }
 
-export async function fetchLearningPath(headers = {}) {
+export async function fetchLearningPath(headers = {}, examId) {
   try {
-    const res = await axios.get(`${API_BASE_URL}/api/content/path`, { headers });
+    const res = await axios.get(`${API_BASE_URL}/api/content/path`, {
+      headers,
+      params: examId ? { examId } : {},
+    });
     if (res.data?.units && res.data?.lessons) {
       return res.data;
     }
@@ -273,7 +278,7 @@ export async function fetchLearningPath(headers = {}) {
     }
   }
 
-  return fetchLegacyLearningPath(headers);
+  return fetchLegacyLearningPath(headers, examId);
 }
 
 export async function fetchNextLesson({ topicId, subtopicId, headers = {} } = {}) {

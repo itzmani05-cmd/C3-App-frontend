@@ -25,6 +25,8 @@ import NotificationsScreen from './src/screens/NotificationsScreen';
 import DailyChallengeHistoryScreen from './src/screens/DailyChallengeHistoryScreen';
 import DailyChallengeProgressScreen from './src/screens/DailyChallengeProgressScreen';
 import DailyChallengeLeaderboardScreen from './src/screens/DailyChallengeLeaderboardScreen';
+import DailyChallengeTopicsScreen from './src/screens/DailyChallengeTopicsScreen';
+import DailyChallengeUnitHistoryScreen from './src/screens/DailyChallengeUnitHistoryScreen';
 import { API_BASE_URL } from './src/config/api';
 import { applyGlobalTypographyDefaults } from './src/theme/typography';
 import { getSession } from './src/utils/authStorage';
@@ -120,6 +122,8 @@ export default function App() {
         <Stack.Screen name="DailyChallengeHistoryScreen" component={DailyChallengeHistoryScreen}/>
         <Stack.Screen name="DailyChallengeProgressScreen" component={DailyChallengeProgressScreen}/>
         <Stack.Screen name="DailyChallengeLeaderboardScreen" component={DailyChallengeLeaderboardScreen}/>
+        <Stack.Screen name="DailyChallengeTopicsScreen" component={DailyChallengeTopicsScreen}/>
+        <Stack.Screen name="DailyChallengeUnitHistoryScreen" component={DailyChallengeUnitHistoryScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
     
