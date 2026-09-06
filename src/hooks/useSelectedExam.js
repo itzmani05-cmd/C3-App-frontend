@@ -73,6 +73,7 @@ export default function useSelectedExam() {
   }, []);
 
   const needsSelection = exams.length > 1 && !selectedExamId;
+  const noExamsAssigned = !loading && exams.length === 0;
 
-  return { loading, exams, selectedExamId, needsSelection, selectExam, clearSelectedExam };
+  return { loading, exams, selectedExamId, needsSelection, noExamsAssigned, selectExam, clearSelectedExam };
 }

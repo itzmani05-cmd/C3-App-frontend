@@ -9,13 +9,14 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
 import useSelectedExam from '../hooks/useSelectedExam';
 import ExamPicker from '../components/ExamPicker';
+import NoExamAssigned from '../components/NoExamAssigned';
 
 export default function ExploreScreen ({navigation}) {
 
   const [units,setUnits]=useState([]);
   const [loading,setLoading]=useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const { loading: examLoading, exams, selectedExamId, needsSelection, selectExam, clearSelectedExam } = useSelectedExam();
+  const { loading: examLoading, exams, selectedExamId, needsSelection, noExamsAssigned, selectExam, clearSelectedExam } = useSelectedExam();
 
   const fetchUnitsFallback = useCallback(async (examId) => {
     const res = await axios.get(`${API_BASE_URL}/api/content/units`, {
@@ -60,13 +61,17 @@ export default function ExploreScreen ({navigation}) {
 
   useFocusEffect(
     useCallback(() => {
-      if (examLoading || needsSelection) return;
+      if (examLoading || needsSelection || noExamsAssigned) return;
       fetchLearningPath(selectedExamId);
-    }, [fetchLearningPath, examLoading, needsSelection, selectedExamId])
+    }, [fetchLearningPath, examLoading, needsSelection, noExamsAssigned, selectedExamId])
   );
 
   if (!examLoading && needsSelection) {
     return <ExamPicker exams={exams} onSelect={selectExam} />;
+  }
+
+  if (!examLoading && noExamsAssigned) {
+    return <NoExamAssigned />;
   }
 
   const handleUnitPress = (unit) => {

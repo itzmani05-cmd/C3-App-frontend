@@ -8,13 +8,14 @@ import { API_BASE_URL } from '../config/api';
 import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
 import useSelectedExam from '../hooks/useSelectedExam';
 import ExamPicker from '../components/ExamPicker';
+import NoExamAssigned from '../components/NoExamAssigned';
 
 export default function DailyChallengeUnitsScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [units, setUnits] = useState([]);
   const [error, setError] = useState(null);
-  const { loading: examLoading, exams, selectedExamId, needsSelection, selectExam, clearSelectedExam } = useSelectedExam();
+  const { loading: examLoading, exams, selectedExamId, needsSelection, noExamsAssigned, selectExam, clearSelectedExam } = useSelectedExam();
 
   const fetchUnits = useCallback(async (isRefreshing = false) => {
     const userId = global.userId || global.user?.userId;
@@ -45,13 +46,17 @@ export default function DailyChallengeUnitsScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      if (examLoading || needsSelection) return;
+      if (examLoading || needsSelection || noExamsAssigned) return;
       fetchUnits();
-    }, [fetchUnits, examLoading, needsSelection])
+    }, [fetchUnits, examLoading, needsSelection, noExamsAssigned])
   );
 
   if (!examLoading && needsSelection) {
     return <ExamPicker exams={exams} onSelect={selectExam} />;
+  }
+
+  if (!examLoading && noExamsAssigned) {
+    return <NoExamAssigned />;
   }
 
   const openUnit = (unit) => {

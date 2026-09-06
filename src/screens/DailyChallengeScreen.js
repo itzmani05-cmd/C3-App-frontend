@@ -8,6 +8,7 @@ import { API_BASE_URL } from '../config/api';
 import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
 import useSelectedExam from '../hooks/useSelectedExam';
 import ExamPicker from '../components/ExamPicker';
+import NoExamAssigned from '../components/NoExamAssigned';
 
 function formatDateTime(value) {
   if (!value) return '—';
@@ -26,7 +27,7 @@ export default function DailyChallengeScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [challenge, setChallenge] = useState(null);
   const [error, setError] = useState(null);
-  const { loading: examLoading, exams, selectedExamId, needsSelection, selectExam, clearSelectedExam } = useSelectedExam();
+  const { loading: examLoading, exams, selectedExamId, needsSelection, noExamsAssigned, selectExam, clearSelectedExam } = useSelectedExam();
 
   const fetchToday = useCallback(async (isRefreshing = false) => {
     const userId = global.userId || global.user?.userId;
@@ -56,14 +57,18 @@ export default function DailyChallengeScreen({ navigation }) {
   }, [selectedExamId]);
 
   useEffect(() => {
-    if (examLoading || needsSelection) return;
+    if (examLoading || needsSelection || noExamsAssigned) return;
     fetchToday();
     const unsubscribe = navigation.addListener('focus', () => fetchToday());
     return unsubscribe;
-  }, [fetchToday, navigation, examLoading, needsSelection]);
+  }, [fetchToday, navigation, examLoading, needsSelection, noExamsAssigned]);
 
   if (!examLoading && needsSelection) {
     return <ExamPicker exams={exams} onSelect={selectExam} />;
+  }
+
+  if (!examLoading && noExamsAssigned) {
+    return <NoExamAssigned />;
   }
 
   const startOrContinue = () => {
