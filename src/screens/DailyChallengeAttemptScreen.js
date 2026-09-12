@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
+import { Calculator } from 'lucide-react-native';
 import axios from 'axios';
 import AppText from '../components/AppText';
 import BilingualText from '../components/BilingualText';
 import Header from '../components/Header';
 import QuestionImage from '../components/QuestionImage';
+import ScientificCalculator from '../components/ScientificCalculator';
 import { API_BASE_URL } from '../config/api';
 import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
 
@@ -76,6 +78,7 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
   const [attemptId, setAttemptId] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+  const [showCalculator, setShowCalculator] = useState(false);
   const answersRef = useRef({});
 
   useEffect(() => {
@@ -211,6 +214,28 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
       <Header title="C3 Daily Challenge" showBack onBackPress={() => navigation.goBack()} />
+
+      <TouchableOpacity
+        onPress={() => setShowCalculator(true)}
+        activeOpacity={0.85}
+        style={{
+          position: 'absolute',
+          top: 112,
+          right: 16,
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: COLORS.brand600,
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 20,
+          ...SHADOWS.md,
+        }}
+      >
+        <Calculator size={20} color={COLORS.white} />
+      </TouchableOpacity>
+
+      <ScientificCalculator visible={showCalculator} onClose={() => setShowCalculator(false)} />
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         {questions.map((q, index) => (
