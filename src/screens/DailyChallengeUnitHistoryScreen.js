@@ -1,79 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
-import axios from 'axios';
-import Header from '../components/Header';
-import AppText from '../components/AppText';
-import DailyChallengeQuestionCard from '../components/DailyChallengeQuestionCard';
-import { API_BASE_URL } from '../config/api';
-import { COLORS } from '../theme/dailyChallengeColors';
-
-function formatDate(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-
-function userHeaders() {
-  const userId = global.userId || global.user?.userId;
-  return { userid: userId };
-}
+import React from 'react';
+import Screen from '../components/ui/Screen';
+import EmptyState from '../components/ui/EmptyState';
+import ReviewQuestionCard from '../components/dailyChallenge/ReviewQuestionCard';
+import useFetch from '../hooks/useFetch';
+import { getUnitArchive } from '../api/dailyChallenge';
+import { formatDate } from '../utils/format';
 
 export default function DailyChallengeUnitHistoryScreen({ route, navigation }) {
   const { unitId, unitName, topicId, topicName } = route.params || {};
-  const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState([]);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/daily-challenge/units/${unitId}/history`, {
-          headers: userHeaders(),
-          params: topicId ? { topicId } : undefined,
-        });
-        setQuestions(Array.isArray(res.data?.questions) ? res.data.questions : []);
-      } catch (err) {
-        console.log('Fetch daily challenge unit history error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHistory();
-  }, [unitId, topicId]);
-
-  const title = topicName || unitName || 'Daily Challenge';
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
-        <Header title={title} showBack={navigation.canGoBack()} onBackPress={() => navigation.goBack()} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color={COLORS.brand600} />
-        </View>
-      </View>
-    );
-  }
+  const { data: questions, loading } = useFetch(() => getUnitArchive(unitId, topicId), [unitId, topicId], {
+    initialData: [],
+  });
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
-      <Header title={title} showBack={navigation.canGoBack()} onBackPress={() => navigation.goBack()} />
-
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-        {questions.length === 0 ? (
-          <AppText style={{ marginTop: 40, color: COLORS.slate500, textAlign: 'center' }}>
-            No completed daily challenges here yet — finish Today's Challenge to start building this up.
-          </AppText>
-        ) : (
-          questions.map((q, index) => (
-            <DailyChallengeQuestionCard
-              key={`${q.challengeId}_${q.questionId}`}
-              question={q}
-              index={index}
-              dateLabel={formatDate(q.publishedAt)}
-            />
-          ))
-        )}
-      </ScrollView>
-    </View>
+    <Screen
+      title={topicName || unitName || 'Daily Challenge'}
+      onBack={navigation.canGoBack() ? navigation.goBack : undefined}
+      loading={loading}
+    >
+      {questions.length === 0 ? (
+        <EmptyState message="No completed daily challenges here yet — finish Today's Challenge to start building this up." />
+      ) : (
+        questions.map((question, index) => (
+          <ReviewQuestionCard
+            key={`${question.challengeId}_${question.questionId}`}
+            question={question}
+            index={index}
+            dateLabel={formatDate(question.publishedAt)}
+          />
+        ))
+      )}
+    </Screen>
   );
 }

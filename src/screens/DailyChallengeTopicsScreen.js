@@ -1,84 +1,32 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from 'react-native';
-import axios from 'axios';
-import Header from '../components/Header';
-import AppText from '../components/AppText';
-import { API_BASE_URL } from '../config/api';
-import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
+import React from 'react';
+import AppText from '../components/ui/AppText';
+import Card from '../components/ui/Card';
+import Screen from '../components/ui/Screen';
+import EmptyState from '../components/ui/EmptyState';
+import useFetch from '../hooks/useFetch';
+import { getTopics } from '../api/content';
+import { COLORS } from '../theme';
 
 export default function DailyChallengeTopicsScreen({ route, navigation }) {
   const { unitId, unitName } = route.params || {};
-  const [loading, setLoading] = useState(true);
-  const [topics, setTopics] = useState([]);
+  const { data: topics, loading } = useFetch(() => getTopics(unitId), [unitId], { initialData: [] });
 
-  useEffect(() => {
-    const fetchTopics = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/content/topics/${unitId}`);
-        setTopics(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.log('Fetch topics error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTopics();
-  }, [unitId]);
-
-  const openTopic = (topic) => {
-    navigation.navigate('DailyChallengeUnitHistoryScreen', {
-      unitId,
-      unitName,
-      topicId: topic._id,
-      topicName: topic.name,
-    });
-  };
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
-        <Header title={unitName || 'Topics'} showBack={navigation.canGoBack()} onBackPress={() => navigation.goBack()} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color={COLORS.brand600} />
-        </View>
-      </View>
-    );
-  }
+  const openTopic = (topic) =>
+    navigation.navigate('DailyChallengeUnitHistoryScreen', { unitId, unitName, topicId: topic._id, topicName: topic.name });
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
-      <Header title={unitName || 'Topics'} showBack={navigation.canGoBack()} onBackPress={() => navigation.goBack()} />
-
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
-        {topics.length === 0 ? (
-          <AppText style={{ marginTop: 40, color: COLORS.slate500, textAlign: 'center' }}>
-            No topics available for this unit yet.
-          </AppText>
-        ) : (
-          topics.map((topic) => (
-            <TouchableOpacity
-              key={topic._id}
-              activeOpacity={0.8}
-              onPress={() => openTopic(topic)}
-              style={cardStyle}
-            >
-              <AppText variant="bold" style={{ fontSize: 15, color: COLORS.slate900 }}>
-                {topic.name}
-              </AppText>
-            </TouchableOpacity>
-          ))
-        )}
-      </ScrollView>
-    </View>
+    <Screen title={unitName || 'Topics'} onBack={navigation.canGoBack() ? navigation.goBack : undefined} loading={loading}>
+      {topics.length === 0 ? (
+        <EmptyState message="No topics available for this unit yet." />
+      ) : (
+        topics.map((topic) => (
+          <Card key={topic._id} onPress={() => openTopic(topic)} style={{ marginTop: 12 }}>
+            <AppText variant="bold" style={{ fontSize: 15, color: COLORS.slate900 }}>
+              {topic.name}
+            </AppText>
+          </Card>
+        ))
+      )}
+    </Screen>
   );
 }
-
-const cardStyle = {
-  marginTop: 12,
-  backgroundColor: COLORS.white,
-  borderRadius: RADII.xxl,
-  padding: 16,
-  borderWidth: 1,
-  borderColor: COLORS.slate200,
-  ...SHADOWS.sm,
-};

@@ -1,10 +1,34 @@
 import React from 'react';
 import { View } from 'react-native';
-import AppText from '../components/AppText';
-import AppButton from '../components/AppButton';
-import Header from '../components/Header';
-import { COLORS, RADII, SHADOWS } from '../theme/dailyChallengeColors';
-import { getMotivationalMessage } from '../utils/motivationalMessage';
+import AppText from '../components/ui/AppText';
+import AppButton from '../components/ui/AppButton';
+import Card from '../components/ui/Card';
+import Screen from '../components/ui/Screen';
+import ScoreHero from '../components/dailyChallenge/ScoreHero';
+import { plural } from '../utils/format';
+import { COLORS, RADII } from '../theme';
+
+function ScoreComparison({ previousScore, score, total }) {
+  if (typeof previousScore !== 'number') return null;
+  const improvement = score - previousScore;
+
+  return (
+    <>
+      <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <AppText style={{ color: COLORS.slate500 }}>
+          Previous Score: {previousScore}/{total}
+        </AppText>
+        <AppText style={{ color: COLORS.slate500 }}>
+          Current Score: {score}/{total}
+        </AppText>
+      </View>
+      <AppText variant="bold" style={{ marginTop: 8, color: improvement >= 0 ? COLORS.success600 : COLORS.danger600 }}>
+        Improvement: {improvement >= 0 ? '+' : ''}
+        {improvement}
+      </AppText>
+    </>
+  );
+}
 
 export default function DailyChallengeResultScreen({ route, navigation }) {
   const { data = {}, challengeId } = route.params || {};
@@ -16,113 +40,48 @@ export default function DailyChallengeResultScreen({ route, navigation }) {
     attemptsRemaining = 0,
     previousScore,
     currentStreak = 0,
+    overallStreak = 0,
   } = data;
 
-  const improvement =
-    typeof previousScore === 'number' ? score - previousScore : null;
-  const percentage = totalQuestions ? (score / totalQuestions) * 100 : 0;
-  const motivationalMessage = getMotivationalMessage(percentage);
+  const goHome = () => navigation.navigate('MainApp');
+  const goToChallenge = () => navigation.replace('DailyChallengeScreen', { challengeId });
 
-  const goHome = () => {
-    navigation.navigate('MainApp');
-  };
-
-  const goToChallenge = () => {
-    navigation.replace('DailyChallengeScreen', { challengeId });
-  };
+  const note =
+    attemptsRemaining > 0
+      ? `You have ${plural(attemptsRemaining, 'attempt')} remaining. Correct answers and explanations will be available after your final attempt or when this challenge expires.`
+      : 'Correct answers and explanations will be available when this challenge expires.';
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.pageBackground }}>
-      <Header title="C3 Daily Challenge" showBack onBackPress={goHome} />
-
+    <Screen title="C3 Daily Challenge" onBack={goHome} scroll={false}>
       <View style={{ padding: 16 }}>
-        <View style={cardStyle}>
-          <AppText variant="medium" style={{ color: COLORS.slate500, fontSize: 13 }}>
-            Attempt {attemptNumber} of {maxAttempts}
-          </AppText>
-          <AppText variant="extraBold" style={{ marginTop: 6, fontSize: 34, color: COLORS.brand600 }}>
-            {score}/{totalQuestions}
-          </AppText>
+        <Card elevation="lg" style={{ borderRadius: RADII.xxxl, padding: 20 }}>
+          <ScoreHero
+            caption={`Attempt ${attemptNumber} of ${maxAttempts}`}
+            score={score}
+            total={totalQuestions}
+            currentStreak={currentStreak}
+            overallStreak={overallStreak}
+          />
+          <ScoreComparison previousScore={previousScore} score={score} total={totalQuestions} />
 
-          <AppText variant="semiBold" style={{ marginTop: 10, fontSize: 14, color: COLORS.slate700, textAlign: 'center' }}>
-            {motivationalMessage}
-          </AppText>
-
-          {currentStreak > 0 ? (
-            <View style={streakPillStyle}>
-              <AppText variant="bold" style={{ fontSize: 13, color: COLORS.warningText }}>
-                🔥 {currentStreak} Day Streak
-              </AppText>
-            </View>
-          ) : null}
-
-          {typeof previousScore === 'number' ? (
-            <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText style={{ color: COLORS.slate500 }}>Previous Score: {previousScore}/{totalQuestions}</AppText>
-              <AppText style={{ color: COLORS.slate500 }}>Current Score: {score}/{totalQuestions}</AppText>
-            </View>
-          ) : null}
-
-          {improvement !== null ? (
-            <AppText
-              variant="bold"
-              style={{ marginTop: 8, color: improvement >= 0 ? COLORS.success600 : COLORS.danger600 }}
-            >
-              Improvement: {improvement >= 0 ? '+' : ''}{improvement}
-            </AppText>
-          ) : null}
-
-          <View style={noteBoxStyle}>
-            <AppText style={{ color: COLORS.slate600, lineHeight: 20 }}>
-              {attemptsRemaining > 0
-                ? `You have ${attemptsRemaining} attempt${attemptsRemaining === 1 ? '' : 's'} remaining. Correct answers and explanations will be available after your final attempt or when this challenge expires.`
-                : 'Correct answers and explanations will be available when this challenge expires.'}
-            </AppText>
+          <View style={noteStyle}>
+            <AppText style={{ color: COLORS.slate600, lineHeight: 20 }}>{note}</AppText>
           </View>
 
-          {attemptsRemaining > 0 ? (
-            <AppButton
-              label="Try Again"
-              onPress={goToChallenge}
-              style={{ marginTop: 20, backgroundColor: COLORS.brand600, borderRadius: RADII.xl }}
-            />
-          ) : (
-            <AppButton
-              label="Back to Challenge"
-              onPress={goToChallenge}
-              style={{ marginTop: 20, backgroundColor: COLORS.brand600, borderRadius: RADII.xl }}
-            />
-          )}
           <AppButton
-            label="Go to Home"
-            tone="secondary"
-            onPress={goHome}
-            style={{ marginTop: 12, borderRadius: RADII.xl }}
+            label={attemptsRemaining > 0 ? 'Try Again' : 'Back to Challenge'}
+            tone="brand"
+            onPress={goToChallenge}
+            style={{ marginTop: 20 }}
           />
-        </View>
+          <AppButton label="Go to Home" tone="secondary" onPress={goHome} style={{ marginTop: 12, borderRadius: RADII.xl }} />
+        </Card>
       </View>
-    </View>
+    </Screen>
   );
 }
 
-const cardStyle = {
-  backgroundColor: COLORS.white,
-  borderRadius: RADII.xxxl,
-  padding: 20,
-  borderWidth: 1,
-  borderColor: COLORS.slate200,
-  ...SHADOWS.lg,
-};
-
-const streakPillStyle = {
-  marginTop: 12,
-  backgroundColor: COLORS.warningSoft,
-  borderRadius: RADII.pill,
-  paddingHorizontal: 14,
-  paddingVertical: 6,
-};
-
-const noteBoxStyle = {
+const noteStyle = {
   marginTop: 18,
   padding: 14,
   borderRadius: RADII.xl,

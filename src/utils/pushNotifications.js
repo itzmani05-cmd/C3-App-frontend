@@ -2,8 +2,11 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { removePushToken, savePushToken } from '../api/user';
+
+const ANDROID_CHANNEL_ID = 'alerts';
+const TOKEN_KEY = '@c3app/pushToken';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -15,40 +18,49 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Requests permission, resolves the Expo push token, and saves it on the student's account so the
-// server can send Daily Challenge reminders. Silently no-ops on simulators/emulators (no push
-// capability) and if permission is denied — this is a best-effort background step, never blocking.
-export async function registerForDailyChallengePushNotifications(userId) {
+async function ensureAndroidChannel() {
+  if (Platform.OS !== 'android') return;
+  await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
+    name: 'C3 notifications',
+    importance: Notifications.AndroidImportance.HIGH,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: '#2563EB',
+    sound: 'default',
+  });
+}
+
+async function hasNotificationPermission() {
+  const existing = await Notifications.getPermissionsAsync();
+  if (existing.status === 'granted') return true;
+  if (existing.canAskAgain === false) return false;
+  const requested = await Notifications.requestPermissionsAsync();
+  return requested.status === 'granted';
+}
+
+export async function registerForPushNotifications(userId) {
   try {
     if (!userId || !Device.isDevice) return;
 
-    if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.DEFAULT,
-      });
-    }
-
-    const existing = await Notifications.getPermissionsAsync();
-    let status = existing.status;
-    if (status !== 'granted') {
-      const requested = await Notifications.requestPermissionsAsync();
-      status = requested.status;
-    }
-    if (status !== 'granted') return;
+    await ensureAndroidChannel();
+    if (!(await hasNotificationPermission())) return;
 
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    const { data: token } = await Notifications.getExpoPushTokenAsync(
-      projectId ? { projectId } : undefined
-    );
+    const { data: token } = await Notifications.getExpoPushTokenAsync(projectId ? { projectId } : undefined);
     if (!token) return;
 
-    await axios.post(
-      `${API_BASE_URL}/api/user/push-token`,
-      { token },
-      { headers: { userid: userId } }
-    );
+    await savePushToken(token);
+    await AsyncStorage.setItem(TOKEN_KEY, token);
   } catch (err) {
     console.log('Push notification registration error:', err);
+  }
+}
+
+export async function unregisterPushNotifications(userId) {
+  try {
+    const token = await AsyncStorage.getItem(TOKEN_KEY);
+    await AsyncStorage.removeItem(TOKEN_KEY);
+    if (userId) await removePushToken(token);
+  } catch (err) {
+    console.log('Push notification unregister error:', err);
   }
 }

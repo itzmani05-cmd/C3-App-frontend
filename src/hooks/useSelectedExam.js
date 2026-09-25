@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
+import { getMyExams } from '../api/user';
 
 const STORAGE_KEY = 'selected_exam_id';
+
+function pickInitialExam(exams, storedExamId) {
+  if (exams.length <= 1) return exams[0]?._id || null;
+  return exams.some((exam) => exam._id === storedExamId) ? storedExamId : null;
+}
 
 export default function useSelectedExam() {
   const [loading, setLoading] = useState(true);
@@ -13,41 +17,22 @@ export default function useSelectedExam() {
   useEffect(() => {
     let isMounted = true;
 
-    const load = async () => {
-      const userId = global.userId || global.user?.userId;
-
-      try {
-        const [examsRes, storedExamId] = await Promise.all([
-          axios.get(`${API_BASE_URL}/api/user/exams`, {
-            headers: userId ? { userid: userId } : {},
-          }),
-          AsyncStorage.getItem(STORAGE_KEY),
-        ]);
-
+    Promise.all([getMyExams(), AsyncStorage.getItem(STORAGE_KEY)])
+      .then(([fetchedExams, storedExamId]) => {
         if (!isMounted) return;
-
-        const fetchedExams = Array.isArray(examsRes.data?.exams) ? examsRes.data.exams : [];
         setExams(fetchedExams);
-
-        if (fetchedExams.length <= 1) {
-          setSelectedExamId(fetchedExams[0]?._id || null);
-        } else if (storedExamId && fetchedExams.some((exam) => exam._id === storedExamId)) {
-          setSelectedExamId(storedExamId);
-        } else {
-          setSelectedExamId(null);
-        }
-      } catch (err) {
+        setSelectedExamId(pickInitialExam(fetchedExams, storedExamId));
+      })
+      .catch((err) => {
         console.log('Fetch exams error:', err);
         if (isMounted) {
           setExams([]);
           setSelectedExamId(null);
         }
-      } finally {
+      })
+      .finally(() => {
         if (isMounted) setLoading(false);
-      }
-    };
-
-    load();
+      });
 
     return () => {
       isMounted = false;

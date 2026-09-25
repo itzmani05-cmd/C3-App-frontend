@@ -1,69 +1,62 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-
 import HomeScreen from '../screens/HomeScreen';
 import ExploreScreen from '../screens/ExploreScreen';
 import DailyChallengeScreen from '../screens/DailyChallengeScreen';
 import DailyChallengeUnitsScreen from '../screens/DailyChallengeUnitsScreen';
 import ProfileStack from './ProfileStack';
-import { TAB_BAR_LABEL_STYLE } from '../theme/typography';
+import { COLORS, TAB_BAR_LABEL_STYLE } from '../theme';
 
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigation({route}){
-  const userId=route?.params?.userId;
+const TABS = [
+  { name: 'Home', component: HomeScreen, icon: 'home' },
+  { name: 'Practice', component: ExploreScreen, icon: 'search' },
+  { name: 'Today', component: DailyChallengeScreen, icon: 'flash' },
+  { name: 'Daily', component: DailyChallengeUnitsScreen, icon: 'calendar', label: 'Archive' },
+  { name: 'Profile', component: ProfileStack, icon: 'person' },
+];
+
+const ICON_BY_TAB = Object.fromEntries(TABS.map((tab) => [tab.name, tab.icon]));
+
+const tabBarStyle = {
+  height: 65,
+  paddingBottom: 8,
+  paddingTop: 8,
+  backgroundColor: COLORS.white,
+  borderTopWidth: 1,
+  borderTopColor: COLORS.slate100,
+  shadowColor: COLORS.slate900,
+  shadowOffset: { width: 0, height: -2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 8,
+  elevation: 8,
+};
+
+export default function TabNavigation() {
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
-        headerShown:false,
-        tabBarIcon:({focused,color}) => {
-          let iconName;
-
-          switch(route.name){
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Practice':
-              iconName = focused ? 'search' : 'search-outline';
-              break;
-            case 'Today':
-              iconName = focused ? 'flash' : 'flash-outline';
-              break;
-            case 'Daily':
-              iconName = focused ? 'calendar' : 'calendar-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
-          }
-
-          return <Ionicons name={iconName} size={22} color={color} />
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarIcon: ({ focused, color }) => {
+          const icon = ICON_BY_TAB[route.name];
+          return <Ionicons name={focused ? icon : `${icon}-outline`} size={22} color={color} />;
         },
-        tabBarActiveTintColor:'#2563EB',
-        tabBarInactiveTintColor:'#9CA3AF',
-        tabBarStyle:{
-          height:65,
-          paddingBottom:8,
-          paddingTop:8,
-          backgroundColor:'#FFFFFF',
-          borderTopWidth:1,
-          borderTopColor:'#F1F5F9',
-          shadowColor:'#0F172A',
-          shadowOffset:{width:0,height:-2},
-          shadowOpacity:0.05,
-          shadowRadius:8,
-          elevation:8,
-        },
-        tabBarLabelStyle: TAB_BAR_LABEL_STYLE
+        tabBarActiveTintColor: COLORS.blue600,
+        tabBarInactiveTintColor: COLORS.gray400,
+        tabBarStyle,
+        tabBarLabelStyle: TAB_BAR_LABEL_STYLE,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} initialParams={{userId}} />
-      <Tab.Screen name="Practice" component={ExploreScreen} />
-      <Tab.Screen name="Today" component={DailyChallengeScreen} />
-      <Tab.Screen name="Daily" component={DailyChallengeUnitsScreen} options={{ tabBarLabel: 'Archive' }} />
-      {/* <Tab.Screen name="Analytics" component={LearningScreen} /> */}
-      <Tab.Screen name="Profile" component={ProfileStack} />
+      {TABS.map((tab) => (
+        <Tab.Screen
+          key={tab.name}
+          name={tab.name}
+          component={tab.component}
+          options={tab.label ? { tabBarLabel: tab.label } : undefined}
+        />
+      ))}
     </Tab.Navigator>
-  )
+  );
 }

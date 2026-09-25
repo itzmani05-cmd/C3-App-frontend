@@ -79,11 +79,11 @@ function normalizeNumericCorrectAnswer(value, rawOptions, optionsLength) {
   return -1;
 }
 
-export function getAnswerType(question) {
+function getAnswerType(question) {
   return question?.answerType || 'single';
 }
 
-export function getCorrectOptionIndexes(question) {
+function getCorrectOptionIndexes(question) {
   const rawOptions = question?.options;
   const options = normalizeQuestionOptions(rawOptions);
   const correctAnswer = question?.correctAnswer ?? question?.correct_answer;
@@ -110,7 +110,7 @@ export function getCorrectOptionIndexes(question) {
   return Array.from(new Set(indexes)).sort((a, b) => a - b);
 }
 
-export function getNumericalAnswer(question) {
+function getNumericalAnswer(question) {
   const correctAnswer = question?.correctAnswer ?? question?.correct_answer;
   return correctAnswer == null ? '' : String(correctAnswer).trim();
 }
@@ -145,7 +145,7 @@ export function getOptionText(option) {
   return String(option);
 }
 
-export function normalizeQuestionOptions(rawOptions) {
+function normalizeQuestionOptions(rawOptions) {
   if (Array.isArray(rawOptions)) {
     return rawOptions;
   }
@@ -157,7 +157,7 @@ export function normalizeQuestionOptions(rawOptions) {
   return getOrderedObjectKeys(rawOptions).map((key) => rawOptions[key]);
 }
 
-export function normalizeQuestionOptionImages(rawOptionImages, rawOptions) {
+function normalizeQuestionOptionImages(rawOptionImages, rawOptions) {
   if (Array.isArray(rawOptionImages)) {
     return rawOptionImages;
   }
@@ -251,4 +251,28 @@ export function normalizeQuestionData(question) {
   }
 
   return normalized;
+}
+
+export function evaluateAnswer(question, answer, correctIndex = question?.correctOptionIndex) {
+  const answerType = question?.answerType || 'single';
+
+  if (answerType === 'multiple') {
+    const selected = Array.isArray(answer?.selectedOptionIndexes) ? answer.selectedOptionIndexes : [];
+    const correct = question?.correctOptionIndexes || [];
+    const answered = selected.length > 0;
+    return {
+      answered,
+      correct: answered && selected.length === correct.length && selected.every((idx) => correct.includes(idx)),
+    };
+  }
+
+  if (answerType === 'numerical') {
+    const selected = String(answer?.selectedNumericalAnswer ?? '').trim();
+    const answered = selected !== '';
+    return { answered, correct: answered && isNumericalAnswerCorrect(selected, question?.numericalAnswer) };
+  }
+
+  const selected = answer?.selectedOptionIndex;
+  const answered = selected !== null && selected !== undefined;
+  return { answered, correct: answered && selected === correctIndex };
 }

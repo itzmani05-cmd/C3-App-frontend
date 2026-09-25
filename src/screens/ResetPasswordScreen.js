@@ -1,191 +1,79 @@
-import React,{useState} from 'react'
-import {View,TouchableOpacity,TextInput,Text,Image,Alert,ActivityIndicator} from 'react-native';
-import axios from 'axios';
-import { Lock, Eye, EyeOff } from 'lucide-react-native';
-import { API_BASE_URL } from '../config/api';
+import React, { useState } from 'react';
+import { Alert, View } from 'react-native';
+import { Lock } from 'lucide-react-native';
+import AppText from '../components/ui/AppText';
+import AppButton from '../components/ui/AppButton';
+import BrandLogo from '../components/ui/BrandLogo';
+import FormField from '../components/ui/FormField';
+import { changePassword } from '../api/user';
+import { getUserId } from '../api/client';
+import { COLORS } from '../theme';
 
-export default function ResetPasswordScreen({navigation}) {
-    const [showOldPassword,setShowOldPassword]=useState(false);
-    const [showPassword,setShowPassword]=useState(false);
-    const [showConfirm,setShowConfirm]=useState(false);
-    const [oldPassword,setOldPassword]=useState('');
-    const [newPassword,setNewPassword]=useState('');
-    const [confirmPassword,setConfirmPassword]=useState('');
-    const [loading,setLoading]=useState(false);
+const MIN_PASSWORD_LENGTH = 6;
 
-    const userId = global.userId || global.user?.userId;
-
-    const handleResetPassword = async () => {
-        if(!oldPassword||!newPassword||!confirmPassword){
-            Alert.alert('Error','Please fill in all fields');
-            return;
-        }
-
-        if(newPassword!==confirmPassword){
-            Alert.alert('Error','New password and confirm password do not match');
-            return;
-        }
-
-        if(newPassword.length<6){
-            Alert.alert('Error','Password must be at least 6 characters long');
-            return;
-        }
-
-        if(!userId){
-            Alert.alert('Error','User not authenticated');
-            return;
-        }
-
-        setLoading(true);
-        try{
-            const response=await axios.post(
-                `${API_BASE_URL}/api/auth/change-password`,
-                {oldPassword,newPassword},
-                {headers:{userid:userId}}
-            );
-            Alert.alert('Success',response.data?.message||'Password changed successfully',[
-                {text:'OK',onPress:()=>navigation.goBack()}
-            ]);
-            setOldPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-        }catch(err){
-            const message=err.response?.data?.message||'Failed to change password';
-            Alert.alert('Error',message);
-        }finally{
-            setLoading(false);
-        }
-    };
-
-  return (
-    <View style={{flex:1,padding:20,backgroundColor:'#F5F5F5'}}>
-        <View style={{flex:1,alignItems:'center',justifyContent:'center',marginBottom:10}}>
-            <Image source={require('../assests/C3AppLogo.png')} 
-                style={{width:244,height:160, resizeMode:'contain',color:'#2563EB'}} 
-            />
-            <Text style={{color:'#6B7280',fontFamily:'ManropeRegular',fontSize:12,marginTop:5}}>
-                Empowering Civil Engineers.
-            </Text>
-        </View>
-        <View style={{marginTop:10,flex:1}}>
-            <Text style={{color:'#000000',fontFamily:'ManropeBold',fontSize:20}}>
-                Reset Password
-            </Text>
-            <Text style={{color:'#6B7280',fontFamily:'ManropeRegular',marginTop:5,fontSize:14}}>
-                At least 6 characters.
-            </Text>
-            
-            <View>
-                <View>
-                    <View style={{
-                        flexDirection:'row',
-                        alignItems:'center',
-                        borderWidth:1,
-                        borderColor:'#D1D5DB',
-                        borderRadius:8,
-                        height:50,
-                        paddingRight:16,                                
-                        paddingLeft:16,
-                        marginBottom:10,
-                        backgroundColor:'#FFFFFF',
-                        marginTop:30
-                        }}
-                    >
-                        <Lock size={20} color="#6B7280" />
-                        <TextInput
-                            placeholder='Old Password'
-                            placeholderTextColor='#9CA3AF'
-                            style={{flex:1, padding:12, color:'#000000',fontFamily:'ManropeRegular'}}
-                            secureTextEntry={!showOldPassword}
-                            value={oldPassword}
-                            onChangeText={setOldPassword}
-                        />
-                        <TouchableOpacity
-                            onPress={()=>setShowOldPassword(!showOldPassword)}
-                        >
-                            {showOldPassword
-                                ? <EyeOff size={20} color="#6B7280" />
-                                : <Eye size={20} color="#6B7280" />
-                            }
-                        </TouchableOpacity>
-                    </View>
-                     <View style={{
-                        flexDirection:'row',
-                        alignItems:'center',
-                        borderWidth:1,
-                        borderColor:'#D1D5DB',
-                        borderRadius:8,
-                        height:50,
-                        paddingRight:16,                                
-                        paddingLeft:16,
-                        marginBottom:10,
-                        backgroundColor:'#FFFFFF'
-                        }}
-                    >
-                        <Lock size={20} color="#6B7280" />
-                        <TextInput
-                            placeholder='New Password'
-                            placeholderTextColor='#9CA3AF'
-                            style={{flex:1, padding:12, color:'#000000',fontFamily:'ManropeRegular'}}
-                            secureTextEntry={!showPassword}
-                            value={newPassword}
-                            onChangeText={setNewPassword}
-                        />
-                        <TouchableOpacity
-                            onPress={()=>setShowPassword(!showPassword)}
-                        >
-                            {showPassword
-                                ? <EyeOff size={20} color="#6B7280" />
-                                : <Eye size={20} color="#6B7280" />
-                            }
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{
-                            flexDirection:'row',
-                            alignItems:'center',
-                            borderWidth:1,
-                            borderColor:'#D1D5DB',
-                            borderRadius:8,
-                            height:50,
-                            paddingRight:16,
-                            paddingLeft:16,
-                            marginBottom:15,
-                            backgroundColor:'#FFFFFF'
-                        }}
-                    >
-                        <Lock size={20} color="#6B7280" />
-                        <TextInput
-                            placeholder='Confirm Password'
-                            placeholderTextColor='#9CA3AF'
-                            style={{flex:1, padding:12, color:'#000000',fontFamily:'ManropeRegular'}}
-                            secureTextEntry={!showConfirm}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                        />
-                        <TouchableOpacity
-                            onPress={()=>setShowConfirm(!showConfirm)}
-                        >
-                            {showConfirm
-                                ? <EyeOff size={20} color="#6B7280" />
-                                : <Eye size={20} color="#6B7280" />
-                            }
-                        </TouchableOpacity>
-                    </View>
-                </View>
-                <TouchableOpacity 
-                    style={{backgroundColor:'#2563EB',height:52,borderRadius:6,marginTop:15,alignItems:'center',justifyContent:'center',}}
-                    onPress={handleResetPassword}
-                    disabled={loading}
-                >
-                    {loading?(
-                        <ActivityIndicator color="#FFFFFF"/>
-                    ):(
-                        <Text style={{color:'#FFFFFF',fontSize:16,fontFamily:'ManropeMedium'}}>Reset Password</Text>
-                    )}
-                </TouchableOpacity>
-            </View>
-        </View>
-    </View>
-  )
+function validate({ oldPassword, newPassword, confirmPassword }) {
+  if (!oldPassword || !newPassword || !confirmPassword) return 'Please fill in all fields';
+  if (newPassword !== confirmPassword) return 'New password and confirm password do not match';
+  if (newPassword.length < MIN_PASSWORD_LENGTH) return `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`;
+  if (!getUserId()) return 'User not authenticated';
+  return null;
 }
 
+export default function ResetPasswordScreen({ navigation }) {
+  const [form, setForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [loading, setLoading] = useState(false);
+  const setField = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleResetPassword = async () => {
+    const error = validate(form);
+    if (error) {
+      Alert.alert('Error', error);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await changePassword(form.oldPassword, form.newPassword);
+      Alert.alert('Success', response?.message || 'Password changed successfully', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+      setForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 20, backgroundColor: COLORS.authBackground }}>
+      <BrandLogo style={{ flex: 1, marginBottom: 10 }} />
+
+      <View style={{ marginTop: 10, flex: 1 }}>
+        <AppText variant="bold" style={{ color: COLORS.black, fontSize: 20 }}>
+          Reset Password
+        </AppText>
+        <AppText style={{ color: COLORS.gray500, marginTop: 5, marginBottom: 30, fontSize: 14 }}>
+          At least {MIN_PASSWORD_LENGTH} characters.
+        </AppText>
+
+        <FormField icon={Lock} secure placeholder="Old Password" value={form.oldPassword} onChangeText={setField('oldPassword')} style={fieldStyle} />
+        <FormField icon={Lock} secure placeholder="New Password" value={form.newPassword} onChangeText={setField('newPassword')} style={fieldStyle} />
+        <FormField
+          icon={Lock}
+          secure
+          placeholder="Confirm Password"
+          value={form.confirmPassword}
+          onChangeText={setField('confirmPassword')}
+          style={[fieldStyle, { marginBottom: 15 }]}
+        />
+
+        <AppButton label="Reset Password" size="lg" loading={loading} onPress={handleResetPassword} style={{ marginTop: 15 }} />
+      </View>
+    </View>
+  );
+}
+
+const fieldStyle = {
+  borderRadius: 8,
+};
