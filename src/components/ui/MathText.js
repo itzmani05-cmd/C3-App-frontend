@@ -1,7 +1,29 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { StyleSheet, Text, View } from 'react-native';
+import { FONT_FAMILY } from '../../theme';
 import { toMathHtml } from '../../utils/mathTokens';
+
+// The web view is native code. An app build made before it was added doesn't have it, so load it defensively: such
+// builds keep running (formulas show as plain text) and get typeset formulas once they are rebuilt.
+let WebView = null;
+try {
+  WebView = require('react-native-webview').WebView;
+} catch (error) {
+  WebView = null;
+}
+
+// If the web view fails to render (e.g. an older build without the native module), show the text instead of crashing.
+class WebViewGuard extends React.Component {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 
 const KATEX_VERSION = '0.16.11';
 const CDN = `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist`;
@@ -67,7 +89,11 @@ export default function MathText({ text, variant = 'regular', style }) {
     [text, color, fontSize, lineHeight, fontWeight, textAlign]
   );
 
+  const fallback = <Text style={[{ fontFamily: FONT_FAMILY[variant] || FONT_FAMILY.regular }, style]}>{text}</Text>;
+  if (!WebView) return fallback;
+
   return (
+    <WebViewGuard fallback={fallback}>
     <View style={[layout, { height }]} pointerEvents="none">
       <WebView
         originWhitelist={['*']}
@@ -86,5 +112,6 @@ export default function MathText({ text, variant = 'regular', style }) {
         }}
       />
     </View>
+    </WebViewGuard>
   );
 }
