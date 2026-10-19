@@ -1,6 +1,8 @@
 import React from 'react';
 import { Platform, Text } from 'react-native';
 import { FONT_FAMILY } from '../../theme';
+import { hasMath } from '../../utils/mathTokens';
+import MathText from './MathText';
 
 const TAMIL_REGEX = /[஀-௿]/;
 
@@ -40,6 +42,9 @@ function toText(children) {
 export default function BilingualText({ variant = 'regular', style, children, ...props }) {
   const textString = toText(children);
   const latinFont = FONT_FAMILY[variant] || FONT_FAMILY.regular;
+
+  // Text with a LaTeX formula is typeset instead of shown as raw $…$.
+  if (hasMath(textString)) return <MathText text={textString} variant={variant} style={style} />;
 
   if (!textString || !TAMIL_REGEX.test(textString)) {
     return (

@@ -10,8 +10,7 @@ function Paragraph({ text, prefix, base, style }) {
   if (!text && !prefix) return null;
   return (
     <BilingualText variant={base.variant} style={[{ fontSize: base.fontSize, lineHeight: base.lineHeight, color: base.color }, style]}>
-      {prefix ? <BilingualText variant="bold" style={{ color: base.prefixColor }}>{prefix} </BilingualText> : null}
-      {text}
+      {prefix ? `${prefix} ${text || ''}` : text}
     </BilingualText>
   );
 }
@@ -38,8 +37,12 @@ function MatchTable({ match, base }) {
     <View style={[styles.headCell, withBorder && styles.cellBorder]}>
       <BilingualText variant="bold" style={styles.headLabel}>
         {label}
-        {title ? <BilingualText variant="medium" style={styles.headTitle}>{`  ${title}`}</BilingualText> : null}
       </BilingualText>
+      {title ? (
+        <BilingualText variant="medium" style={styles.headTitle}>
+          {title}
+        </BilingualText>
+      ) : null}
     </View>
   );
 
@@ -98,7 +101,7 @@ function StatementList({ statements, base }) {
  * `prefix` (e.g. "Q3.") is shown in front of the first line of text.
  */
 export default function FormattedQuestionText({ text, prefix, variant = 'medium', fontSize = 15, lineHeight = 22, color = COLORS.gray700 }) {
-  const base = { variant, fontSize, lineHeight, color, prefixColor: color };
+  const base = { variant, fontSize, lineHeight, color };
   const source = text || '';
 
   const match = parseMatchTheFollowing(source);
