@@ -1,6 +1,6 @@
 import React from 'react';
 import AppText from '../ui/AppText';
-import BilingualText from '../ui/BilingualText';
+import FormattedQuestionText from '../quiz/FormattedQuestionText';
 import Card from '../ui/Card';
 import QuestionImage from '../question/QuestionImage';
 import ChoiceOption, { MultiSelectHint } from '../question/ChoiceOption';
@@ -41,9 +41,7 @@ export default function AttemptQuestionCard({ question, index, total, ...handler
       <AppText variant="bold" style={{ fontSize: 15, marginBottom: 8, color: COLORS.slate900 }}>
         Question {index + 1} of {total}
       </AppText>
-      <BilingualText variant="medium" style={{ fontSize: 15, color: COLORS.slate700, lineHeight: 22 }}>
-        {question.questionText}
-      </BilingualText>
+      <FormattedQuestionText text={question.questionText} color={COLORS.slate700} />
       <QuestionImage uri={question.questionImage} height={180} />
       <Answers question={question} {...handlers} />
     </Card>

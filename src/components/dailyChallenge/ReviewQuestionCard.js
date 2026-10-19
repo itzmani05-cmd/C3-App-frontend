@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import AppText from '../ui/AppText';
 import BilingualText from '../ui/BilingualText';
+import FormattedQuestionText from '../quiz/FormattedQuestionText';
 import Card from '../ui/Card';
 import QuestionImage from '../question/QuestionImage';
 import AnswerStatusPill from '../question/AnswerStatusPill';
@@ -67,9 +68,9 @@ export default function ReviewQuestionCard({ question, index, dateLabel }) {
         <AnswerStatusPill answered={answered} correct={correct} />
       </View>
 
-      <BilingualText variant="medium" style={{ marginTop: 8, fontSize: 14, color: COLORS.slate700, lineHeight: 21 }}>
-        {question.questionText}
-      </BilingualText>
+      <View style={{ marginTop: 8 }}>
+        <FormattedQuestionText text={question.questionText} fontSize={14} lineHeight={21} color={COLORS.slate700} />
+      </View>
       <QuestionImage uri={question.questionImage} height={160} />
 
       {question.answerType === 'numerical' ? (

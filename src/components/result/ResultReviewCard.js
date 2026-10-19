@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import AppText from '../ui/AppText';
 import BilingualText from '../ui/BilingualText';
+import FormattedQuestionText from '../quiz/FormattedQuestionText';
 import Card from '../ui/Card';
 import QuestionImage from '../question/QuestionImage';
 import AnswerStatusPill from '../question/AnswerStatusPill';
@@ -97,9 +98,9 @@ export default function ResultReviewCard({ question, index, answer }) {
   return (
     <Card elevation="card" style={cardStyle}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-        <BilingualText variant="bold" style={{ flex: 1, marginRight: 12, color: COLORS.black, fontSize: 16, lineHeight: 24 }}>
-          Q{index + 1}. {question.questionText || question.question}
-        </BilingualText>
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <FormattedQuestionText text={question.questionText || question.question} prefix={`Q${index + 1}.`} variant="bold" fontSize={16} lineHeight={24} color={COLORS.black} />
+        </View>
         <AnswerStatusPill answered={answered} correct={correct} palette="blue" />
       </View>
 
