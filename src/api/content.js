@@ -1,4 +1,5 @@
 import api from './client';
+import { networkFirst } from '../utils/offlineCache';
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
@@ -30,6 +31,41 @@ export async function getNextLesson(topicId, subtopicId) {
 export async function getQuiz({ topicId, subtopicId, sessionId }) {
   const url = subtopicId ? `/api/quiz/subtopic/${subtopicId}` : `/api/quiz/topic/${topicId}`;
   const { data } = await api.get(url, { params: sessionId ? { sessionId } : undefined });
+  return data;
+}
+
+// Practice questions are a random sample, so they are not refreshed in the background: the saved set is only used
+// when the request fails, which lets a lesson that was opened before be practised offline.
+export function getPracticeQuestions({ topicId, subtopicId }) {
+  return networkFirst(`practice:${subtopicId || topicId}`, async (options) => {
+    const { data } = await api.get('/api/quiz/practice', {
+      ...options,
+      params: subtopicId ? { subtopicId } : { topicId },
+    });
+    return asArray(data?.questions);
+  });
+}
+
+// One page of a lesson's practice questions in a fixed order, with the student's saved place. Without an `offset` the
+// page starts where the student left off. Pages are saved so a lesson opened before can be practised offline.
+export function getPracticeLesson({ topicId, subtopicId, offset, limit }) {
+  const lessonId = subtopicId || topicId;
+  return networkFirst(`practice-lesson:${lessonId}:${offset ?? 'resume'}:${limit ?? ''}`, async (options) => {
+    const { data } = await api.get('/api/quiz/practice/lesson', {
+      ...options,
+      params: { ...(subtopicId ? { subtopicId } : { topicId }), ...(offset !== undefined ? { offset } : {}), ...(limit ? { limit } : {}) },
+    });
+    return { ...data, questions: asArray(data?.questions), practicedIds: asArray(data?.practicedIds) };
+  });
+}
+
+export async function savePracticeProgress({ topicId, subtopicId, questionIds, position }) {
+  const { data } = await api.post('/api/quiz/practice/progress', { topicId, subtopicId, questionIds, position });
+  return data;
+}
+
+export async function recordTry({ sessionId, questionId }) {
+  const { data } = await api.post('/api/quiz/try', { sessionId, questionId });
   return data;
 }
 
