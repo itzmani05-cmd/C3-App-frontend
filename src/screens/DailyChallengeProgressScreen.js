@@ -1,22 +1,26 @@
 import React from 'react';
 import { View } from 'react-native';
+import { CircleCheck, ListChecks, Percent, Target } from '../icons';
 import Screen from '../components/ui/Screen';
+import { StatsSkeleton } from '../components/ui/Skeletons';
 import StatCard from '../components/ui/StatCard';
 import StreakSummaryCard from '../components/dailyChallenge/StreakSummaryCard';
 import TopicPerformanceCard from '../components/dailyChallenge/TopicPerformanceCard';
 import useFetch from '../hooks/useFetch';
 import { getProgressOverview } from '../api/dailyChallenge';
-import { COLORS } from '../theme';
+import { COLORS, tw } from '../theme';
 
 function buildStats(summary) {
   return [
-    { label: 'Challenges Completed', value: summary?.challengesCompleted || 0, accent: COLORS.brand600 },
-    { label: 'Questions Answered', value: summary?.questionsAnswered || 0, accent: COLORS.accent600 },
-    { label: 'Accuracy', value: `${Math.round(summary?.accuracy || 0)}%`, accent: COLORS.success600 },
+    { label: 'Challenges completed', value: summary?.challengesCompleted || 0, accent: COLORS.brand700, icon: CircleCheck, tone: 'brand' },
+    { label: 'Questions answered', value: summary?.questionsAnswered || 0, accent: COLORS.accent700, icon: ListChecks, tone: 'accent' },
+    { label: 'Accuracy', value: `${Math.round(summary?.accuracy || 0)}%`, accent: COLORS.success600, icon: Percent, tone: 'success' },
     {
-      label: 'Average Score',
+      label: 'Average score',
       value: `${(summary?.averageScore || 0).toFixed(1)}/${summary?.questionsPerChallenge || 5}`,
-      accent: COLORS.info600,
+      accent: COLORS.slate900,
+      icon: Target,
+      tone: 'warning',
     },
   ];
 }
@@ -24,15 +28,18 @@ function buildStats(summary) {
 export default function DailyChallengeProgressScreen({ navigation }) {
   const { data, loading } = useFetch(getProgressOverview, [], {
     initialData: { summary: null, topics: [], weakArea: null, streakHistory: [] },
+    cacheKey: 'progress-overview',
   });
 
   return (
-    <Screen title="Daily Challenge Progress" onBack={navigation.goBack} loading={loading}>
+    <Screen title="My Progress" onBack={navigation.goBack} loading={loading} skeleton={<StatsSkeleton />}>
       <StreakSummaryCard summary={data.summary} history={data.streakHistory} />
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 16, marginHorizontal: -6 }}>
+      <View style={tw`flex-row flex-wrap -mx-1 mt-3`}>
         {buildStats(data.summary).map((stat) => (
-          <StatCard key={stat.label} {...stat} style={{ width: '48%', marginHorizontal: '1%', marginTop: 8 }} />
+          <View key={stat.label} style={tw`w-1/2 p-1`}>
+            <StatCard {...stat} />
+          </View>
         ))}
       </View>
 

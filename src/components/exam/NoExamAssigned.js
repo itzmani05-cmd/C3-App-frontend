@@ -1,15 +1,18 @@
 import React from 'react';
 import { View } from 'react-native';
+import { GraduationCap } from '../../icons';
 import AppText from '../ui/AppText';
-import { COLORS } from '../../theme';
+import IconTile from '../ui/IconTile';
+import { tw } from '../../theme';
 
 export default function NoExamAssigned() {
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.appBackground, padding: 16, justifyContent: 'center', alignItems: 'center' }}>
-      <AppText variant="extraBold" style={{ fontSize: 20, color: COLORS.slate900, marginBottom: 8, textAlign: 'center' }}>
+    <View style={tw`flex-1 items-center justify-center bg-app px-8`}>
+      <IconTile icon={GraduationCap} tone="neutral" size={56} iconSize={26} />
+      <AppText variant="extraBold" style={tw`mt-4 mb-2 text-xl text-slate-900 text-center`}>
         No exam assigned yet
       </AppText>
-      <AppText style={{ fontSize: 14, color: COLORS.gray500, textAlign: 'center' }}>
+      <AppText style={tw`text-sm leading-5 text-slate-500 text-center`}>
         Your account isn't registered for an exam yet. Please contact your institute admin to get one assigned.
       </AppText>
     </View>

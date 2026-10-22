@@ -44,6 +44,21 @@ export function formatTimeRemaining(expiresAt) {
   return `${hours}h ${totalMinutes % 60}m left`;
 }
 
+// Like formatTimeRemaining, but in the last hour it counts seconds too ("42m 18s left").
+export function formatCountdown(expiresAt) {
+  const diffMs = new Date(expiresAt).getTime() - Date.now();
+  if (!Number.isFinite(diffMs) || diffMs <= 0) return 'Expired';
+
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (days > 0) return `${days}d ${hours}h left`;
+  if (hours > 0) return `${hours}h ${minutes}m left`;
+  return `${minutes}m ${String(totalSeconds % 60).padStart(2, '0')}s left`;
+}
+
 export function formatClock(totalSeconds) {
   return `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, '0')}`;
 }

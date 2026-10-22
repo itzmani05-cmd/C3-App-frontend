@@ -1,4 +1,5 @@
 import api from './client';
+import { networkFirst } from '../utils/offlineCache';
 
 export async function login(email, password) {
   const { data } = await api.post('/api/auth/login', { email, password });
@@ -20,9 +21,11 @@ export async function getDashboard() {
   return data;
 }
 
-export async function getMyExams() {
-  const { data } = await api.get('/api/user/exams');
-  return Array.isArray(data?.exams) ? data.exams : [];
+export function getMyExams() {
+  return networkFirst('exams', async (options) => {
+    const { data } = await api.get('/api/user/exams', options);
+    return Array.isArray(data?.exams) ? data.exams : [];
+  });
 }
 
 export async function savePushToken(token) {

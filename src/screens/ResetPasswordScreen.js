@@ -1,43 +1,56 @@
-import React, { useState } from 'react';
-import { Alert, View } from 'react-native';
-import { Lock } from 'lucide-react-native';
+import React, { useRef, useState } from 'react';
+import { Alert, Keyboard, View } from 'react-native';
+import { Lock } from '../icons';
 import AppText from '../components/ui/AppText';
 import AppButton from '../components/ui/AppButton';
-import BrandLogo from '../components/ui/BrandLogo';
+import Card from '../components/ui/Card';
 import FormField from '../components/ui/FormField';
+import Screen from '../components/ui/Screen';
 import { changePassword } from '../api/user';
 import { getUserId } from '../api/client';
-import { COLORS } from '../theme';
+import { COLORS, tw } from '../theme';
 
 const MIN_PASSWORD_LENGTH = 6;
 
 function validate({ oldPassword, newPassword, confirmPassword }) {
-  if (!oldPassword || !newPassword || !confirmPassword) return 'Please fill in all fields';
-  if (newPassword !== confirmPassword) return 'New password and confirm password do not match';
-  if (newPassword.length < MIN_PASSWORD_LENGTH) return `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`;
-  if (!getUserId()) return 'User not authenticated';
-  return null;
+  const errors = {};
+  if (!oldPassword) errors.oldPassword = 'Enter your current password';
+  if (!newPassword) errors.newPassword = 'Enter a new password';
+  else if (newPassword.length < MIN_PASSWORD_LENGTH) errors.newPassword = `Use at least ${MIN_PASSWORD_LENGTH} characters`;
+  if (!confirmPassword) errors.confirmPassword = 'Confirm your new password';
+  else if (newPassword && newPassword !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
+  return errors;
 }
 
 export default function ResetPasswordScreen({ navigation }) {
+  const newRef = useRef(null);
+  const confirmRef = useRef(null);
   const [form, setForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const setField = (field) => (value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const setField = (field) => (value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+  };
 
   const handleResetPassword = async () => {
-    const error = validate(form);
-    if (error) {
-      Alert.alert('Error', error);
+    if (loading) return;
+    Keyboard.dismiss();
+
+    const found = validate(form);
+    setErrors(found);
+    if (Object.keys(found).length > 0) return;
+    if (!getUserId()) {
+      Alert.alert('Error', 'User not authenticated');
       return;
     }
 
     setLoading(true);
     try {
       const response = await changePassword(form.oldPassword, form.newPassword);
-      Alert.alert('Success', response?.message || 'Password changed successfully', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
       setForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      Alert.alert('Success', response?.message || 'Password changed successfully', [{ text: 'OK', onPress: () => navigation.goBack() }]);
     } catch (err) {
       Alert.alert('Error', err.response?.data?.message || 'Failed to change password');
     } finally {
@@ -46,34 +59,58 @@ export default function ResetPasswordScreen({ navigation }) {
   };
 
   return (
-    <View style={{ flex: 1, padding: 20, backgroundColor: COLORS.authBackground }}>
-      <BrandLogo style={{ flex: 1, marginBottom: 10 }} />
-
-      <View style={{ marginTop: 10, flex: 1 }}>
-        <AppText variant="bold" style={{ color: COLORS.black, fontSize: 20 }}>
-          Reset Password
+    <Screen title="Change Password" onBack={navigation.goBack} background={COLORS.appBackground}>
+      <Card elevation="sm" style={tw`p-5`}>
+        <AppText variant="extraBold" style={tw`text-xl text-slate-900`}>
+          Update your password
         </AppText>
-        <AppText style={{ color: COLORS.gray500, marginTop: 5, marginBottom: 30, fontSize: 14 }}>
-          At least {MIN_PASSWORD_LENGTH} characters.
-        </AppText>
+        <AppText style={tw`mt-1 mb-5 text-[13px] leading-5 text-slate-500`}>Use at least {MIN_PASSWORD_LENGTH} characters that you do not use elsewhere.</AppText>
 
-        <FormField icon={Lock} secure placeholder="Old Password" value={form.oldPassword} onChangeText={setField('oldPassword')} style={fieldStyle} />
-        <FormField icon={Lock} secure placeholder="New Password" value={form.newPassword} onChangeText={setField('newPassword')} style={fieldStyle} />
         <FormField
+          label="Current password"
           icon={Lock}
           secure
-          placeholder="Confirm Password"
+          placeholder="Enter current password"
+          value={form.oldPassword}
+          onChangeText={setField('oldPassword')}
+          error={errors.oldPassword}
+          autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => newRef.current?.focus()}
+          blurOnSubmit={false}
+        />
+        <FormField
+          ref={newRef}
+          label="New password"
+          icon={Lock}
+          secure
+          placeholder="Enter new password"
+          value={form.newPassword}
+          onChangeText={setField('newPassword')}
+          error={errors.newPassword}
+          autoCapitalize="none"
+          returnKeyType="next"
+          onSubmitEditing={() => confirmRef.current?.focus()}
+          blurOnSubmit={false}
+        />
+        <FormField
+          ref={confirmRef}
+          label="Confirm new password"
+          icon={Lock}
+          secure
+          placeholder="Re-enter new password"
           value={form.confirmPassword}
           onChangeText={setField('confirmPassword')}
-          style={[fieldStyle, { marginBottom: 15 }]}
+          error={errors.confirmPassword}
+          autoCapitalize="none"
+          returnKeyType="go"
+          onSubmitEditing={handleResetPassword}
         />
 
-        <AppButton label="Reset Password" size="lg" loading={loading} onPress={handleResetPassword} style={{ marginTop: 15 }} />
-      </View>
-    </View>
+        <View style={tw`mt-2`}>
+          <AppButton label="Update password" size="lg" loading={loading} onPress={handleResetPassword} style={tw`rounded-lg`} />
+        </View>
+      </Card>
+    </Screen>
   );
 }
-
-const fieldStyle = {
-  borderRadius: 8,
-};

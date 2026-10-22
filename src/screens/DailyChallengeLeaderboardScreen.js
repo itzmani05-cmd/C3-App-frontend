@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import AppText from '../components/ui/AppText';
 import Card from '../components/ui/Card';
 import Screen from '../components/ui/Screen';
+import { LeaderboardSkeleton } from '../components/ui/Skeletons';
 import EmptyState from '../components/ui/EmptyState';
 import LeaderboardRow from '../components/dailyChallenge/LeaderboardRow';
 import useFetch from '../hooks/useFetch';
@@ -17,7 +18,7 @@ export default function DailyChallengeLeaderboardScreen({ navigation }) {
   const showMyRank = me && !leaderboard.some((entry) => entry.isMe);
 
   return (
-    <Screen title="Leaderboard" onBack={navigation.goBack} loading={loading} refreshing={refreshing} onRefresh={refresh}>
+    <Screen title="Leaderboard" onBack={navigation.goBack} loading={loading} skeleton={<LeaderboardSkeleton />} refreshing={refreshing} onRefresh={refresh}>
       {leaderboard.length === 0 ? (
         <EmptyState title="No rankings yet" message="Complete a Daily Challenge to appear on the leaderboard." />
       ) : (

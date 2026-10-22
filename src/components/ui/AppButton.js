@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator } from 'react-native';
+import PressableScale from './PressableScale';
 import AppText from './AppText';
 import { COLORS, RADII } from '../../theme';
 
@@ -28,10 +29,13 @@ export default function AppButton({
   const sizeStyle = SIZES[size] || SIZES.md;
 
   return (
-    <TouchableOpacity
+    <PressableScale
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.85}
+      scaleTo={0.97}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: disabled || loading }}
       style={[baseStyle, toneStyle.container, sizeStyle.container, disabled ? disabledStyle : null, style]}
     >
       {loading ? (
@@ -41,7 +45,7 @@ export default function AppButton({
           {label}
         </AppText>
       )}
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 

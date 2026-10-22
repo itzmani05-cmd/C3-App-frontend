@@ -141,20 +141,20 @@ export default function FormattedQuestionText({ text, prefix, variant = 'medium'
 }
 
 const styles = {
-  table: { marginTop: 8, borderWidth: 1, borderColor: COLORS.slate300, borderRadius: RADII.md, overflow: 'hidden', backgroundColor: COLORS.white },
+  table: { marginTop: 10, borderWidth: 1, borderColor: COLORS.slate200, borderRadius: RADII.lg, overflow: 'hidden', backgroundColor: COLORS.white },
   row: { flexDirection: 'row' },
   rowDivider: { borderBottomWidth: 1, borderBottomColor: COLORS.slate200 },
-  headRow: { backgroundColor: COLORS.slate100, borderBottomWidth: 1, borderBottomColor: COLORS.slate300 },
+  headRow: { backgroundColor: COLORS.slate50, borderBottomWidth: 1, borderBottomColor: COLORS.slate200 },
   headCell: { flex: 1, padding: 10 },
   headLabel: { fontSize: 11, letterSpacing: 0.6, color: COLORS.slate600 },
   headTitle: { fontSize: 11, color: COLORS.slate500 },
   cell: { flex: 1, flexDirection: 'row', padding: 10 },
   cellBorder: { borderLeftWidth: 1, borderLeftColor: COLORS.slate200 },
   marker: { width: 22, color: COLORS.brand700 },
-  arBox: { borderWidth: 1, borderColor: COLORS.slate200, borderRadius: RADII.md, backgroundColor: COLORS.slate50, padding: 12 },
+  arBox: { borderWidth: 1, borderColor: COLORS.slate200, borderLeftWidth: 3, borderLeftColor: COLORS.brand600, borderRadius: RADII.md, backgroundColor: COLORS.slate50, padding: 12 },
   arLabel: { fontSize: 11, letterSpacing: 0.6, color: COLORS.brand700, marginBottom: 2 },
   arDivider: { height: 1, backgroundColor: COLORS.slate200, marginVertical: 10 },
-  statement: { flexDirection: 'row', alignItems: 'flex-start', borderWidth: 1, borderColor: COLORS.slate200, borderRadius: RADII.md, backgroundColor: COLORS.slate50, padding: 10, marginBottom: 8 },
-  badge: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.brand100, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
-  badgeText: { fontSize: 12, color: COLORS.brand700 },
+  statement: { flexDirection: 'row', alignItems: 'flex-start', borderWidth: 1, borderColor: COLORS.slate200, borderRadius: RADII.md, backgroundColor: COLORS.white, padding: 10, marginBottom: 8 },
+  badge: { width: 24, height: 24, borderRadius: 7, backgroundColor: COLORS.brand600, alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  badgeText: { fontSize: 12, color: COLORS.white },
 };

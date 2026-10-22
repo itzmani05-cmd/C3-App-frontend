@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { FONT_FAMILY } from '../../theme';
 import { toMathHtml } from '../../utils/mathTokens';
@@ -25,8 +25,16 @@ class WebViewGuard extends React.Component {
   }
 }
 
-const KATEX_VERSION = '0.16.11';
-const CDN = `https://cdn.jsdelivr.net/npm/katex@${KATEX_VERSION}/dist`;
+// KaTeX ships inside the app (see scripts/build-katex-assets.js), so formulas typeset without a network connection.
+// The ~0.5 MB payload is only loaded when the first formula is shown, and the page head is built once and shared.
+let katexHead = null;
+function getKatexHead() {
+  if (!katexHead) {
+    const { KATEX_CSS, KATEX_JS } = require('../../utils/katexAssets');
+    katexHead = `<style>${KATEX_CSS}</style>\n<script>${KATEX_JS.replace(/<\/script/gi, '<\\/script')}</script>`;
+  }
+  return katexHead;
+}
 const WEIGHTS = { regular: 400, medium: 500, semiBold: 600, bold: 700, extraBold: 800 };
 
 // Style keys that describe the text itself; everything else (flex, margins, width…) stays on the wrapper view.
@@ -35,8 +43,7 @@ const TEXT_KEYS = ['color', 'fontSize', 'fontFamily', 'fontWeight', 'fontStyle',
 function buildPage(body, { color, fontSize, lineHeight, fontWeight, textAlign }) {
   return `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="stylesheet" href="${CDN}/katex.min.css">
-<script src="${CDN}/katex.min.js"></script>
+${getKatexHead()}
 <style>
   html,body{margin:0;padding:0;background:transparent;-webkit-text-size-adjust:100%}
   body{font-family:-apple-system,Roboto,'Segoe UI',sans-serif;font-size:${fontSize}px;line-height:${lineHeight}px;color:${color};font-weight:${fontWeight};text-align:${textAlign};white-space:pre-wrap;overflow-wrap:anywhere}
@@ -68,9 +75,9 @@ function buildPage(body, { color, fontSize, lineHeight, fontWeight, textAlign })
 /**
  * Text that contains LaTeX, typeset with KaTeX in a small web view (React Native has no maths renderer of its own).
  * It takes the same style props as <Text>; touches pass through to the parent so options stay tappable.
- * Needs a network connection to fetch KaTeX; without one the formulas show as their source text.
+ * KaTeX is bundled with the app, so no network connection is needed.
  */
-export default function MathText({ text, variant = 'regular', style }) {
+function MathText({ text, variant = 'regular', style }) {
   const flat = StyleSheet.flatten(style) || {};
   const fontSize = flat.fontSize || 14;
   const lineHeight = flat.lineHeight || Math.round(fontSize * 1.5);
@@ -89,6 +96,13 @@ export default function MathText({ text, variant = 'regular', style }) {
     [text, color, fontSize, lineHeight, fontWeight, textAlign]
   );
 
+  // Stable props for the web view: a new `source` object or handler on every render makes it do needless work.
+  const source = useMemo(() => ({ html }), [html]);
+  const handleMessage = useCallback((event) => {
+    const next = parseInt(event.nativeEvent.data, 10);
+    if (next > 0) setHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
+  }, []);
+
   const fallback = <Text style={[{ fontFamily: FONT_FAMILY[variant] || FONT_FAMILY.regular }, style]}>{text}</Text>;
   if (!WebView) return fallback;
 
@@ -97,7 +111,7 @@ export default function MathText({ text, variant = 'regular', style }) {
     <View style={[layout, { height }]} pointerEvents="none">
       <WebView
         originWhitelist={['*']}
-        source={{ html, baseUrl: 'https://cdn.jsdelivr.net' }}
+        source={source}
         style={{ height, backgroundColor: 'transparent' }}
         containerStyle={{ backgroundColor: 'transparent' }}
         scrollEnabled={false}
@@ -106,12 +120,18 @@ export default function MathText({ text, variant = 'regular', style }) {
         showsHorizontalScrollIndicator={false}
         javaScriptEnabled
         androidLayerType="hardware"
-        onMessage={(event) => {
-          const next = parseInt(event.nativeEvent.data, 10);
-          if (next > 0) setHeight((prev) => (Math.abs(prev - next) > 1 ? next : prev));
-        }}
+        onMessage={handleMessage}
       />
     </View>
     </WebViewGuard>
   );
 }
+
+// Parents pass a fresh style object on every render (the quiz screen re-renders on each answer), so compare styles by
+// value; otherwise every formula would rebuild its page and reload its web view.
+const sameProps = (a, b) =>
+  a.text === b.text &&
+  a.variant === b.variant &&
+  JSON.stringify(StyleSheet.flatten(a.style)) === JSON.stringify(StyleSheet.flatten(b.style));
+
+export default React.memo(MathText, sameProps);

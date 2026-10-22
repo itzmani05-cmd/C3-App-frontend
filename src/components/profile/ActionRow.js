@@ -1,43 +1,30 @@
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { View } from 'react-native';
+import PressableScale from '../ui/PressableScale';
+import { ChevronRight } from '../../icons';
 import AppText from '../ui/AppText';
-import { COLORS, RADII } from '../../theme';
+import IconTile from '../ui/IconTile';
+import { COLORS, SHADOWS, tw } from '../../theme';
 
-export default function ActionRow({ icon: Icon, label, helper, onPress, danger = false }) {
+export default function ActionRow({ icon, label, helper, onPress, danger = false }) {
   return (
-    <TouchableOpacity onPress={onPress} style={rowStyle}>
-      <View style={[iconWrapStyle, { backgroundColor: danger ? COLORS.red100 : COLORS.gray100 }]}>
-        <Icon size={20} color={danger ? COLORS.red600 : COLORS.blue600} />
-      </View>
+    <PressableScale
+      onPress={onPress}
+      scaleTo={0.985}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[tw`mb-2.5 flex-row items-center rounded-xl border border-slate-200 bg-white p-3`, SHADOWS.sm]}
+    >
+      <IconTile icon={icon} tone={danger ? 'danger' : 'brand'} size={40} iconSize={19} />
 
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <AppText variant="bold" style={{ color: COLORS.black, fontSize: 15 }}>
+      <View style={tw`flex-1 ml-3`}>
+        <AppText variant="bold" style={[tw`text-[15px]`, { color: danger ? COLORS.red600 : COLORS.slate900 }]}>
           {label}
         </AppText>
-        <AppText style={{ marginTop: 4, color: COLORS.gray500, fontSize: 12 }}>{helper}</AppText>
+        <AppText style={tw`mt-0.5 text-xs text-slate-500`}>{helper}</AppText>
       </View>
 
-      <ChevronRight size={20} color={COLORS.blue600} />
-    </TouchableOpacity>
+      <ChevronRight size={18} color={COLORS.slate400} />
+    </PressableScale>
   );
 }
-
-const rowStyle = {
-  marginTop: 12,
-  backgroundColor: COLORS.white,
-  borderRadius: RADII.lg,
-  padding: 14,
-  borderWidth: 1,
-  borderColor: COLORS.gray200,
-  flexDirection: 'row',
-  alignItems: 'center',
-};
-
-const iconWrapStyle = {
-  width: 42,
-  height: 42,
-  borderRadius: RADII.md,
-  justifyContent: 'center',
-  alignItems: 'center',
-};

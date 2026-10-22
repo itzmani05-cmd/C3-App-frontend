@@ -1,15 +1,16 @@
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
+import PressableScale from './PressableScale';
 import { COLORS, RADII, SHADOWS } from '../../theme';
 
-export default function Card({ onPress, elevation = 'sm', style, activeOpacity = 0.8, children }) {
+export default function Card({ onPress, elevation = 'sm', style, accessibilityLabel, children }) {
   const cardStyle = [baseStyle, SHADOWS[elevation], style];
 
   if (onPress) {
     return (
-      <TouchableOpacity activeOpacity={activeOpacity} onPress={onPress} style={cardStyle}>
+      <PressableScale onPress={onPress} scaleTo={0.985} accessibilityRole="button" accessibilityLabel={accessibilityLabel} style={cardStyle}>
         {children}
-      </TouchableOpacity>
+      </PressableScale>
     );
   }
 

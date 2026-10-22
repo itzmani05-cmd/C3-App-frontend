@@ -24,7 +24,7 @@ export default function Pill({ label, tone = 'neutral', color, backgroundColor, 
 }
 
 const baseStyle = {
-  borderRadius: RADII.pill,
-  paddingHorizontal: 10,
-  paddingVertical: 4,
+  borderRadius: RADII.sm,
+  paddingHorizontal: 8,
+  paddingVertical: 3,
 };

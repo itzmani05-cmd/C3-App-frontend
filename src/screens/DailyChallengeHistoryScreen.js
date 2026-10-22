@@ -1,5 +1,6 @@
 import React from 'react';
 import Screen from '../components/ui/Screen';
+import { ListSkeleton } from '../components/ui/Skeletons';
 import EmptyState from '../components/ui/EmptyState';
 import ChallengeHistoryItem from '../components/dailyChallenge/ChallengeHistoryItem';
 import useFetch from '../hooks/useFetch';
@@ -12,7 +13,7 @@ export default function DailyChallengeHistoryScreen({ navigation }) {
     navigation.navigate('DailyChallengeReviewScreen', { challengeId: item.challengeId, attemptId: item.latestAttemptId });
 
   return (
-    <Screen title="Challenge History" onBack={navigation.goBack} loading={loading}>
+    <Screen title="Challenge History" onBack={navigation.goBack} loading={loading} skeleton={<ListSkeleton count={5} />}>
       {challenges.length === 0 ? (
         <EmptyState message="No past challenges yet." />
       ) : (

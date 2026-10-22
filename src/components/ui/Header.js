@@ -1,12 +1,21 @@
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
-import { ArrowLeft, Bell, LogOut } from 'lucide-react-native';
+import { Animated, TouchableOpacity, View } from 'react-native';
+import { ArrowLeft, Bell, LayoutGrid, LogOut } from '../../icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from './AppText';
 import { COLORS } from '../../theme';
 
-function IconButton({ onPress, disabled, style, children }) {
+function IconButton({ onPress, disabled, style, label, children }) {
   return (
-    <TouchableOpacity onPress={onPress} disabled={disabled} activeOpacity={0.7} style={[iconButtonStyle, style]}>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.7}
+      hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[iconButtonStyle, style]}
+    >
       {children}
     </TouchableOpacity>
   );
@@ -18,6 +27,9 @@ function RightAction({ label, color, onPress }) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
+      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
       style={[
         rightActionStyle,
         {
@@ -44,24 +56,35 @@ export default function Header({
   onRightPress,
   rightLabelColor = COLORS.red600,
   onBellPress,
+  onMenuPress,
   unreadCount = 0,
+  titleOpacity,
 }) {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={containerStyle}>
+    <View style={[containerStyle, { height: insets.top + 56, paddingTop: insets.top }]}>
       {showBack ? (
-        <IconButton onPress={onBackPress} disabled={!onBackPress} style={backButtonStyle}>
+        <IconButton onPress={onBackPress} disabled={!onBackPress} style={backButtonStyle} label="Go back">
           <ArrowLeft size={18} color={COLORS.slate900} />
         </IconButton>
       ) : null}
 
-      <AppText variant="extraBold" style={titleStyle} numberOfLines={1}>
-        {title}
-      </AppText>
+      <Animated.View style={titleOpacity ? { opacity: titleOpacity } : null}>
+        <AppText variant="extraBold" style={titleStyle} numberOfLines={1}>
+          {title}
+        </AppText>
+      </Animated.View>
 
-      {onBellPress || rightLabel ? (
+      {onBellPress || onMenuPress || rightLabel ? (
         <View style={rightGroupStyle}>
+          {onMenuPress ? (
+            <IconButton onPress={onMenuPress} label="Open features menu" style={{ marginRight: onBellPress || rightLabel ? 10 : 0 }}>
+              <LayoutGrid size={17} color={COLORS.brand700} />
+            </IconButton>
+          ) : null}
           {onBellPress ? (
-            <IconButton onPress={onBellPress} style={{ marginRight: rightLabel ? 10 : 0 }}>
+            <IconButton onPress={onBellPress} label="Notifications" style={{ marginRight: rightLabel ? 10 : 0 }}>
               <Bell size={17} color={COLORS.gray700} />
               {unreadCount > 0 ? <View style={unreadDotStyle} /> : null}
             </IconButton>
@@ -74,19 +97,13 @@ export default function Header({
 }
 
 const containerStyle = {
-  height: 100,
-  paddingTop: 50,
-  paddingBottom: 18,
   paddingHorizontal: 16,
   backgroundColor: COLORS.white,
   justifyContent: 'center',
   flexDirection: 'row',
   alignItems: 'center',
-  shadowColor: COLORS.slate900,
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.06,
-  shadowRadius: 8,
-  elevation: 3,
+  borderBottomWidth: 1,
+  borderBottomColor: COLORS.slate200,
   zIndex: 10,
 };
 
@@ -94,14 +111,16 @@ const titleStyle = {
   fontSize: 17,
   color: COLORS.slate900,
   textAlign: 'center',
-  letterSpacing: 0.2,
+  letterSpacing: -0.2,
 };
 
 const iconButtonStyle = {
   width: 36,
   height: 36,
-  borderRadius: 18,
-  backgroundColor: COLORS.gray100,
+  borderRadius: 8,
+  backgroundColor: COLORS.white,
+  borderWidth: 1,
+  borderColor: COLORS.slate200,
   justifyContent: 'center',
   alignItems: 'center',
 };
@@ -109,13 +128,13 @@ const iconButtonStyle = {
 const backButtonStyle = {
   position: 'absolute',
   left: 12,
-  bottom: 14,
+  bottom: 10,
 };
 
 const rightGroupStyle = {
   position: 'absolute',
   right: 16,
-  bottom: 14,
+  bottom: 12,
   flexDirection: 'row',
   alignItems: 'center',
 };
@@ -137,6 +156,6 @@ const rightActionStyle = {
   justifyContent: 'center',
   alignItems: 'center',
   paddingHorizontal: 12,
-  borderRadius: 999,
+  borderRadius: 8,
   borderWidth: 1,
 };

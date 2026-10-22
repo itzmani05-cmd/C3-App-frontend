@@ -8,7 +8,7 @@ export default function NumericalAnswerInput({ value, onChange, style }) {
       value={value}
       onChangeText={onChange}
       placeholder="Enter your answer"
-      placeholderTextColor={COLORS.slate400}
+      placeholderTextColor={COLORS.slate500}
       keyboardType="numeric"
       style={[inputStyle, style]}
     />

@@ -12,8 +12,8 @@ import { evaluateAnswer, getCorrectOptionIndex, getOptionText } from '../../util
 import { COLORS } from '../../theme';
 
 const OPTION_TONES = {
-  correct: { borderColor: COLORS.blue300, backgroundColor: COLORS.blue50, textColor: COLORS.blue700, hintColor: COLORS.blue600 },
-  wrong: { borderColor: COLORS.red300, backgroundColor: COLORS.red50, textColor: COLORS.red700, hintColor: COLORS.red600 },
+  correct: { borderColor: COLORS.green300, backgroundColor: COLORS.green50, textColor: COLORS.slate900, hintColor: COLORS.green600 },
+  wrong: { borderColor: COLORS.red300, backgroundColor: COLORS.red50, textColor: COLORS.slate900, hintColor: COLORS.red600 },
   plain: { borderColor: COLORS.gray200, backgroundColor: COLORS.white, textColor: COLORS.gray700, hintColor: COLORS.gray500 },
 };
 
@@ -96,7 +96,7 @@ export default function ResultReviewCard({ question, index, answer }) {
   const hasExplanation = question.explanation || question.explanationImage;
 
   return (
-    <Card elevation="card" style={cardStyle}>
+    <Card elevation="sm" style={cardStyle}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
         <View style={{ flex: 1, marginRight: 12 }}>
           <FormattedQuestionText text={question.questionText || question.question} prefix={`Q${index + 1}.`} variant="bold" fontSize={16} lineHeight={24} color={COLORS.black} />
@@ -108,7 +108,7 @@ export default function ResultReviewCard({ question, index, answer }) {
       <Answers question={question} answer={answer} correct={correct} />
 
       {hasExplanation ? (
-        <ExplanationBox text={question.explanation} image={question.explanationImage} accent={COLORS.blue600} textColor={COLORS.gray700} />
+        <ExplanationBox text={question.explanation} image={question.explanationImage} accent={COLORS.brand600} textColor={COLORS.gray700} />
       ) : null}
     </Card>
   );
@@ -116,13 +116,13 @@ export default function ResultReviewCard({ question, index, answer }) {
 
 const cardStyle = {
   marginTop: 14,
-  borderRadius: 18,
+  borderRadius: 12,
   borderColor: COLORS.gray200,
 };
 
 const optionRowStyle = {
   borderWidth: 1,
-  borderRadius: 12,
+  borderRadius: 10,
   padding: 12,
   marginTop: 10,
 };

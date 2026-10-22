@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import Screen from '../components/ui/Screen';
+import { QuestionSkeleton } from '../components/ui/Skeletons';
 import AppButton from '../components/ui/AppButton';
 import AttemptQuestionCard from '../components/dailyChallenge/AttemptQuestionCard';
 import CalculatorButton from '../components/question/CalculatorButton';
 import { startAttempt, submitAttempt } from '../api/dailyChallenge';
-import { COLORS } from '../theme';
 
 const ERROR_TITLES = { 410: 'Challenge expired', 403: 'No attempts remaining' };
 
@@ -21,6 +21,7 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const answersRef = useRef({});
+  const allowLeaveRef = useRef(false);
 
   useEffect(() => {
     startAttempt(challengeId)
@@ -34,6 +35,27 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
       })
       .finally(() => setLoading(false));
   }, [challengeId, navigation]);
+
+  // Answers in a daily challenge are not saved between visits, so confirm before throwing them away.
+  useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (event) => {
+        if (allowLeaveRef.current || loading || submitting || Object.keys(answersRef.current).length === 0) return;
+        event.preventDefault();
+        Alert.alert('Leave this attempt?', 'Your answers for this attempt will be lost.', [
+          { text: 'Stay', style: 'cancel' },
+          {
+            text: 'Leave',
+            style: 'destructive',
+            onPress: () => {
+              allowLeaveRef.current = true;
+              navigation.dispatch(event.data.action);
+            },
+          },
+        ]);
+      }),
+    [navigation, loading, submitting]
+  );
 
   const updateAnswer = (questionId, update) => {
     setAnswers((prev) => {
@@ -59,6 +81,7 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
     setSubmitting(true);
     try {
       const result = await submitAttempt(challengeId, attemptId, toResponses(answersRef.current));
+      allowLeaveRef.current = true;
       navigation.replace(result.revealed ? 'DailyChallengeReviewScreen' : 'DailyChallengeResultScreen', {
         challengeId,
         data: result,
@@ -67,7 +90,17 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
       const status = err.response?.status;
       const message = err.response?.data?.message || 'Submit failed. Please try again.';
       const title = ERROR_TITLES[status];
-      if (title) Alert.alert(title, message, [{ text: 'OK', onPress: () => navigation.goBack() }]);
+      if (title) {
+        Alert.alert(title, message, [
+          {
+            text: 'OK',
+            onPress: () => {
+              allowLeaveRef.current = true;
+              navigation.goBack();
+            },
+          },
+        ]);
+      }
       else Alert.alert('Error', message);
     } finally {
       setSubmitting(false);
@@ -88,9 +121,10 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
 
   return (
     <Screen
-      title="C3 Daily Challenge"
+      title="Daily Challenge"
       onBack={navigation.goBack}
       loading={loading}
+      skeleton={<QuestionSkeleton />}
       top={<CalculatorButton />}
     >
       {questions.map((question, index) => (
@@ -106,10 +140,9 @@ export default function DailyChallengeAttemptScreen({ route, navigation }) {
 
       <AppButton
         label={submitting ? 'Submitting...' : 'Submit Challenge'}
-        tone="brand"
         onPress={handleSubmitPress}
-        disabled={submitting}
-        style={{ marginTop: 8, paddingVertical: 16, backgroundColor: submitting ? COLORS.slate400 : COLORS.brand600 }}
+        loading={submitting}
+        style={{ marginTop: 8, paddingVertical: 16 }}
         textStyle={{ fontSize: 16 }}
       />
     </Screen>

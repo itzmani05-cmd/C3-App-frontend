@@ -6,11 +6,12 @@ import { getSession } from '../utils/authStorage';
 import { registerForPushNotifications } from '../utils/pushNotifications';
 
 const FONTS = {
-  ManropeRegular: require('../../assets/fonts/Manrope-Regular.ttf'),
-  ManropeMedium: require('../../assets/fonts/Manrope-Medium.ttf'),
-  ManropeSemiBold: require('../../assets/fonts/Manrope-SemiBold.ttf'),
-  ManropeBold: require('../../assets/fonts/Manrope-Bold.ttf'),
-  ManropeExtraBold: require('../../assets/fonts/Manrope-ExtraBold.ttf'),
+  InterRegular: require('../../assets/fonts/Inter_400Regular.ttf'),
+  InterMedium: require('../../assets/fonts/Inter_500Medium.ttf'),
+  InterSemiBold: require('../../assets/fonts/Inter_600SemiBold.ttf'),
+  InterBold: require('../../assets/fonts/Inter_700Bold.ttf'),
+  JakartaBold: require('../../assets/fonts/PlusJakartaSans_700Bold.ttf'),
+  JakartaExtraBold: require('../../assets/fonts/PlusJakartaSans_800ExtraBold.ttf'),
 };
 
 async function applyPendingUpdate() {

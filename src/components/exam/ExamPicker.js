@@ -1,30 +1,35 @@
 import React from 'react';
 import { FlatList, TouchableOpacity, View } from 'react-native';
+import { ChevronRight, GraduationCap } from '../../icons';
 import AppText from '../ui/AppText';
-import { COLORS } from '../../theme';
+import IconTile from '../ui/IconTile';
+import { COLORS, SHADOWS, tw } from '../../theme';
 
 function ExamOption({ exam, onPress }) {
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={optionStyle}>
-      <AppText variant="bold" style={{ fontSize: 16, color: COLORS.slate900 }}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`Choose ${exam.name}`}
+      style={[tw`mb-3 flex-row items-center rounded-xl border border-slate-200 bg-white p-3.5`, SHADOWS.sm]}
+    >
+      <IconTile icon={GraduationCap} tone="brand" size={44} iconSize={22} />
+      <AppText variant="bold" style={tw`flex-1 mx-3.5 text-base text-slate-900`}>
         {exam.name}
       </AppText>
-      <AppText variant="bold" style={{ fontSize: 16, color: COLORS.blue600 }}>
-        →
-      </AppText>
+      <ChevronRight size={18} color={COLORS.slate400} />
     </TouchableOpacity>
   );
 }
 
 export default function ExamPicker({ exams, onSelect }) {
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.appBackground, padding: 16 }}>
-      <AppText variant="extraBold" style={{ fontSize: 20, color: COLORS.slate900, marginTop: 24, marginBottom: 4 }}>
+    <View style={tw`flex-1 bg-app px-4`}>
+      <AppText variant="extraBold" style={tw`mt-16 mb-1 text-2xl text-slate-900`}>
         Choose your exam
       </AppText>
-      <AppText style={{ fontSize: 14, color: COLORS.gray500, marginBottom: 20 }}>
-        You're enrolled in more than one exam. Pick one to continue.
-      </AppText>
+      <AppText style={tw`mb-6 text-sm leading-5 text-slate-500`}>You're enrolled in more than one exam. Pick one to continue.</AppText>
 
       <FlatList
         data={exams}
@@ -34,15 +39,3 @@ export default function ExamPicker({ exams, onSelect }) {
     </View>
   );
 }
-
-const optionStyle = {
-  padding: 18,
-  marginBottom: 12,
-  backgroundColor: COLORS.white,
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: COLORS.gray200,
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-};

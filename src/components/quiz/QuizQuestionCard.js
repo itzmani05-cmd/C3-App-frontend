@@ -7,8 +7,8 @@ import ChoiceOption, { MultiSelectHint } from '../question/ChoiceOption';
 import NumericalAnswerInput from '../question/NumericalAnswerInput';
 import FormattedQuestionText from './FormattedQuestionText';
 import AttemptStatus from './AttemptStatus';
-import { getCorrectOptionIndex, getOptionText } from '../../utils/questionFormat';
-import { COLORS, RADII } from '../../theme';
+import { getOptionText } from '../../utils/questionFormat';
+import { COLORS, tw } from '../../theme';
 
 const MAX_ATTEMPTS = 3;
 
@@ -16,7 +16,8 @@ function SingleChoice({ question, answer, onSelect }) {
   const attempts = answer?.attempts || 0;
   const locked = attempts >= MAX_ATTEMPTS;
   const revealed = !!answer?.revealedAfterAttempts;
-  const correctIndex = getCorrectOptionIndex(question);
+  // Once the server reveals the answer, the revealed option is stored as the selection.
+  const correctIndex = revealed ? answer.selectedOptionIndex : -1;
 
   return (
     <>
@@ -65,10 +66,10 @@ function MultipleChoice({ question, answer, onToggle }) {
 
 export default function QuizQuestionCard({ question, index, answer, onSelect, onToggle, onNumericalChange }) {
   return (
-    <Card elevation="card" style={cardStyle}>
-      <View style={{ marginBottom: 12 }}>
-        <AppText variant="bold" style={{ fontSize: 16, marginBottom: 8, color: COLORS.slate900 }}>
-          Question No {index + 1}.
+    <Card elevation="sm" style={tw`mb-4`}>
+      <View style={tw`mb-3`}>
+        <AppText variant="bold" style={[tw`mb-2.5 text-xs text-brand-700`, { letterSpacing: 0.8 }]}>
+          QUESTION {index + 1}
         </AppText>
         <FormattedQuestionText text={question.questionText || question.question} />
       </View>
@@ -81,7 +82,7 @@ export default function QuizQuestionCard({ question, index, answer, onSelect, on
         <NumericalAnswerInput
           value={answer?.selectedNumericalAnswer || ''}
           onChange={(text) => onNumericalChange(question._id, text)}
-          style={{ marginTop: 4, borderColor: COLORS.gray200 }}
+          style={{ marginTop: 4, borderColor: COLORS.slate200 }}
         />
       ) : (
         <SingleChoice question={question} answer={answer} onSelect={onSelect} />
@@ -90,8 +91,3 @@ export default function QuizQuestionCard({ question, index, answer, onSelect, on
   );
 }
 
-const cardStyle = {
-  borderRadius: RADII.lg + 2,
-  marginBottom: 16,
-  borderColor: COLORS.gray200,
-};

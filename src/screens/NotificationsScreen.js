@@ -1,6 +1,8 @@
 import React from 'react';
 import Screen from '../components/ui/Screen';
+import { ListSkeleton } from '../components/ui/Skeletons';
 import EmptyState from '../components/ui/EmptyState';
+import ErrorState from '../components/ui/ErrorState';
 import NotificationItem from '../components/notifications/NotificationItem';
 import useFetch from '../hooks/useFetch';
 import { getNotifications, markAllNotificationsRead } from '../api/notifications';
@@ -8,7 +10,7 @@ import { markRead, openNotification } from '../utils/notificationRouter';
 import { COLORS } from '../theme';
 
 export default function NotificationsScreen({ navigation }) {
-  const { data: notifications, setData, loading, refreshing, refresh } = useFetch(getNotifications, [], { initialData: [] });
+  const { data: notifications, setData, loading, refreshing, refresh, error, reload } = useFetch(getNotifications, [], { initialData: [] });
   const hasUnread = notifications.some((n) => !n.read);
 
   const markAllRead = async () => {
@@ -42,10 +44,13 @@ export default function NotificationsScreen({ navigation }) {
         rightLabelColor: COLORS.brand600,
       }}
       loading={loading}
+      skeleton={<ListSkeleton count={6} />}
       refreshing={refreshing}
       onRefresh={refresh}
     >
-      {notifications.length === 0 ? (
+      {error && notifications.length === 0 ? (
+        <ErrorState onRetry={() => reload()} style={{ paddingVertical: 80 }} />
+      ) : notifications.length === 0 ? (
         <EmptyState message="No notifications yet." />
       ) : (
         notifications.map((n) => <NotificationItem key={n._id} notification={n} onPress={() => handlePress(n)} />)

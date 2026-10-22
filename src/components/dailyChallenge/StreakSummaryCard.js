@@ -1,17 +1,22 @@
 import React from 'react';
 import { View } from 'react-native';
+import { Flame, Trophy } from '../../icons';
 import AppText from '../ui/AppText';
+import Card from '../ui/Card';
+import IconTile from '../ui/IconTile';
 import { formatDayLabel } from '../../utils/format';
-import { COLORS, RADII, SHADOWS } from '../../theme';
+import { COLORS, tw } from '../../theme';
 
-function StreakStat({ icon, value, label, color }) {
+function StreakStat({ icon, tone, value, label, color }) {
   return (
-    <View style={{ flex: 1, alignItems: 'center' }}>
-      <AppText style={{ fontSize: 28 }}>{icon}</AppText>
-      <AppText variant="extraBold" style={{ marginTop: 6, fontSize: 28, color }}>
-        {value || 0} Day{value === 1 ? '' : 's'}
+    <View style={tw`flex-1 items-center`}>
+      <IconTile icon={icon} tone={tone} size={40} iconSize={20} />
+      <AppText variant="extraBold" style={[tw`mt-3 text-[26px]`, { color, letterSpacing: -0.5 }]}>
+        {value || 0}
       </AppText>
-      <AppText style={{ marginTop: 2, color: COLORS.slate600 }}>{label}</AppText>
+      <AppText style={tw`mt-0.5 text-xs text-slate-500`}>
+        {label}
+      </AppText>
     </View>
   );
 }
@@ -19,20 +24,25 @@ function StreakStat({ icon, value, label, color }) {
 function StreakGraph({ history }) {
   if (!history.length) {
     return (
-      <AppText style={{ marginTop: 10, color: COLORS.slate500 }}>
+      <AppText style={tw`mt-4 text-[13px] leading-5 text-slate-500 text-center`}>
         Complete a Daily Challenge to start building your streak graph.
       </AppText>
     );
   }
 
   return (
-    <View style={{ width: '100%', marginTop: 14, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+    <View style={tw`mt-5 flex-row items-end justify-between`}>
       {history.map((day, index) => (
-        <View key={day.dateKey || index} style={{ alignItems: 'center', flex: 1 }}>
-          <View style={[barStyle, { backgroundColor: day.completed ? COLORS.success500 : COLORS.slate100 }]}>
-            {day.completed ? <AppText style={{ fontSize: 12 }}>🔥</AppText> : null}
+        <View key={day.dateKey || index} style={tw`flex-1 items-center`}>
+          <View
+            style={[
+              tw`w-7 h-9 rounded-lg items-center justify-center`,
+              { backgroundColor: day.completed ? COLORS.amber50 : COLORS.slate100, borderWidth: 1, borderColor: day.completed ? COLORS.amber100 : COLORS.slate200 },
+            ]}
+          >
+            {day.completed ? <Flame size={15} color={COLORS.amber600} /> : null}
           </View>
-          <AppText style={{ marginTop: 6, fontSize: 9, color: COLORS.slate500 }}>{formatDayLabel(day.dateKey)}</AppText>
+          <AppText style={tw`mt-1.5 text-[9px] text-slate-500`}>{formatDayLabel(day.dateKey)}</AppText>
         </View>
       ))}
     </View>
@@ -41,34 +51,14 @@ function StreakGraph({ history }) {
 
 export default function StreakSummaryCard({ summary, history }) {
   return (
-    <View style={cardStyle}>
-      <View style={{ flexDirection: 'row', alignSelf: 'stretch' }}>
-        <StreakStat icon="🔥" value={summary?.currentStreak} label="Day Streak" color={COLORS.warningText} />
-        <View style={{ width: 1, backgroundColor: COLORS.slate200, marginHorizontal: 8 }} />
-        <StreakStat icon="🏆" value={summary?.overallStreak} label="Overall Streak" color={COLORS.brand600} />
+    <Card elevation="sm" style={tw`p-5`}>
+      <View style={tw`flex-row`}>
+        <StreakStat icon={Flame} tone="warning" value={summary?.currentStreak} label="Day streak" color={COLORS.amber800} />
+        <View style={tw`w-px bg-slate-200 mx-2`} />
+        <StreakStat icon={Trophy} tone="brand" value={summary?.overallStreak} label="Overall streak" color={COLORS.brand700} />
       </View>
-      <AppText style={{ marginTop: 8, fontSize: 12, color: COLORS.slate500 }}>
-        Best Streak: {summary?.longestStreak || 0} days
-      </AppText>
+      <AppText style={tw`mt-4 text-center text-xs text-slate-500`}>Best streak: {summary?.longestStreak || 0} days</AppText>
       <StreakGraph history={history} />
-    </View>
+    </Card>
   );
 }
-
-const cardStyle = {
-  alignItems: 'center',
-  backgroundColor: COLORS.warningSoft,
-  borderRadius: RADII.xxxl,
-  padding: 22,
-  borderWidth: 1,
-  borderColor: COLORS.warningSoft,
-  ...SHADOWS.md,
-};
-
-const barStyle = {
-  width: '70%',
-  height: 36,
-  borderRadius: RADII.pill,
-  justifyContent: 'center',
-  alignItems: 'center',
-};

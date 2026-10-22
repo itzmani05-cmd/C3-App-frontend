@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Image, Modal, PanResponder, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Minus, Plus, RotateCcw, X } from 'lucide-react-native';
+import { Minus, Plus, RotateCcw, X } from '../../icons';
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;

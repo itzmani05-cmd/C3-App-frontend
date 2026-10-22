@@ -1,8 +1,10 @@
 import React from 'react';
 import { View } from 'react-native';
+import { TriangleAlert } from '../../icons';
 import AppText from '../ui/AppText';
 import Card from '../ui/Card';
-import { COLORS, RADII } from '../../theme';
+import ProgressBar from '../ui/ProgressBar';
+import { COLORS, tw } from '../../theme';
 
 function accuracyColor(accuracy) {
   if (accuracy >= 80) return COLORS.success500;
@@ -13,62 +15,41 @@ function TopicBar({ topic }) {
   const accuracy = Math.round(topic.accuracy || 0);
 
   return (
-    <View style={{ marginTop: 12 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <AppText style={{ fontSize: 13, color: COLORS.slate700 }}>{topic.topicName}</AppText>
-        <AppText variant="bold" style={{ fontSize: 13, color: COLORS.slate900 }}>
+    <View style={tw`mt-4`}>
+      <View style={tw`flex-row justify-between`}>
+        <AppText variant="medium" style={tw`flex-1 mr-3 text-[13px] text-slate-700`} numberOfLines={1}>
+          {topic.topicName}
+        </AppText>
+        <AppText variant="bold" style={tw`text-[13px] text-slate-900`}>
           {accuracy}%
         </AppText>
       </View>
-      <View style={trackStyle}>
-        <View style={[fillStyle, { width: `${Math.min(100, accuracy)}%`, backgroundColor: accuracyColor(accuracy) }]} />
-      </View>
+      <ProgressBar value={accuracy} color={accuracyColor(accuracy)} height={7} style={tw`mt-1.5`} />
     </View>
   );
 }
 
 export default function TopicPerformanceCard({ topics, weakArea }) {
   return (
-    <Card style={{ marginTop: 20 }}>
-      <AppText variant="bold" style={{ fontSize: 15, color: COLORS.slate900 }}>
-        Your Performance
+    <Card elevation="sm" style={tw`mt-5`}>
+      <AppText variant="extraBold" style={tw`text-base text-slate-900`}>
+        Your performance
       </AppText>
 
       {topics.length === 0 ? (
-        <AppText style={{ marginTop: 10, color: COLORS.slate500 }}>
-          Complete a few Daily Challenges to see your topic-wise performance.
-        </AppText>
+        <AppText style={tw`mt-3 text-[13px] leading-5 text-slate-500`}>Complete a few Daily Challenges to see your topic-wise performance.</AppText>
       ) : (
         topics.map((topic) => <TopicBar key={topic.topicId} topic={topic} />)
       )}
 
       {weakArea ? (
-        <View style={weakAreaStyle}>
-          <AppText variant="bold" style={{ fontSize: 13, color: COLORS.danger600 }}>
-            ⚠ Weak Area: {weakArea.topicName}
+        <View style={tw`mt-5 flex-row items-center rounded-xl border border-red-100 bg-red-50 p-3`}>
+          <TriangleAlert size={16} color={COLORS.red600} />
+          <AppText variant="semiBold" style={tw`ml-2 flex-1 text-[13px] text-red-700`}>
+            Weak area: {weakArea.topicName}
           </AppText>
         </View>
       ) : null}
     </Card>
   );
 }
-
-const trackStyle = {
-  marginTop: 6,
-  height: 8,
-  borderRadius: RADII.pill,
-  backgroundColor: COLORS.slate100,
-  overflow: 'hidden',
-};
-
-const fillStyle = {
-  height: 8,
-  borderRadius: RADII.pill,
-};
-
-const weakAreaStyle = {
-  marginTop: 16,
-  padding: 12,
-  borderRadius: RADII.xl,
-  backgroundColor: COLORS.dangerSoft,
-};

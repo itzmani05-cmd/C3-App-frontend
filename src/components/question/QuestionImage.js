@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Maximize2 } from 'lucide-react-native';
+import { ImageOff, Maximize2 } from '../../icons';
 import ImageZoomModal from './ImageZoomModal';
 
 export default function QuestionImage({ uri, height = 200, style, imageStyle, zoomable = true }) {
@@ -21,6 +21,7 @@ export default function QuestionImage({ uri, height = 200, style, imageStyle, zo
   if (failed) {
     return (
       <View style={[styles.errorWrap, style]}>
+        <ImageOff size={16} color="#B91C1C" />
         <Text style={styles.errorText}>Could not load image</Text>
       </View>
     );
@@ -61,8 +62,10 @@ const styles = StyleSheet.create({
   },
   img: {
     width: '100%',
-    borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginTop: 8,
   },
   zoomBadge: {
@@ -80,7 +83,10 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 12,
     backgroundColor: '#FEF2F2',
-    borderRadius: 12,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   errorText: {
     color: '#B91C1C',

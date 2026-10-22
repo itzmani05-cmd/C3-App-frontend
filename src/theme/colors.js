@@ -1,9 +1,16 @@
 export const COLORS = {
-  brand50: '#EEF2FF',
-  brand100: '#E0E7FF',
-  brand500: '#6366F1',
-  brand600: '#4F46E5',
-  brand700: '#4338CA',
+  // Brand: the C3 logo blue, same scale as the website.
+  brand50: '#EFF6FF',
+  brand100: '#DBEAFE',
+  brand500: '#3B82F6',
+  brand600: '#2563EB',
+  brand700: '#1D4ED8',
+  brand900: '#1E3A8A',
+
+  // Ink: the navy used for dark surfaces on the website.
+  ink700: '#1E2A44',
+  ink800: '#141D33',
+  ink900: '#0D1426',
 
   accent500: '#8B5CF6',
   accent600: '#7C3AED',
@@ -69,51 +76,53 @@ export const COLORS = {
   amber600: '#D97706',
   amber800: '#92400E',
 
-  pageBackground: '#F3F6FB',
-  appBackground: '#F8FAFC',
+  pageBackground: '#F4F5F7',
+  appBackground: '#F4F5F7',
   authBackground: '#F5F5F5',
   baseText: '#0F172A',
   white: '#FFFFFF',
   black: '#000000',
 };
 
+// Gently rounded corners, as on the website (6 / 8 / 12 / 16).
 export const RADII = {
   sm: 6,
-  md: 12,
-  lg: 16,
-  xl: 14,
-  xxl: 20,
-  xxxl: 28,
+  md: 8,
+  lg: 10,
+  xl: 10,
+  xxl: 12,
+  xxxl: 16,
   pill: 999,
 };
 
+// Barely-there shadows; borders do most of the separation.
 export const SHADOWS = {
   sm: {
     shadowColor: COLORS.slate900,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1,
   },
   card: {
     shadowColor: COLORS.slate900,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   md: {
     shadowColor: COLORS.slate900,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    shadowRadius: 6,
+    elevation: 2,
   },
   lg: {
     shadowColor: COLORS.slate900,
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.14,
-    shadowRadius: 32,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    elevation: 8,
   },
 };

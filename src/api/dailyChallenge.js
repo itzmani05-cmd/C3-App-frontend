@@ -14,16 +14,6 @@ export async function getChallengeHistory() {
   return asArray(data?.challenges);
 }
 
-export async function getArchiveUnits(examId) {
-  const { data } = await api.get(`${BASE}/units`, { params: examParams(examId) });
-  return asArray(data?.units);
-}
-
-export async function getUnitArchive(unitId, topicId) {
-  const { data } = await api.get(`${BASE}/units/${unitId}/history`, { params: topicId ? { topicId } : undefined });
-  return asArray(data?.questions);
-}
-
 export async function getLeaderboard() {
   const { data } = await api.get(`${BASE}/leaderboard`);
   return { leaderboard: asArray(data?.leaderboard), me: data?.me || null };

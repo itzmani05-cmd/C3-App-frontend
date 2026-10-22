@@ -1,24 +1,35 @@
 import React from 'react';
+import { View } from 'react-native';
 import AppText from '../ui/AppText';
+import ProgressBar from '../ui/ProgressBar';
 import StreakBadges from './StreakBadges';
 import { getMotivationalMessage } from '../../utils/motivationalMessage';
-import { COLORS } from '../../theme';
+import { COLORS, tw } from '../../theme';
+
+function barColor(percentage) {
+  if (percentage >= 80) return COLORS.success500;
+  return percentage >= 50 ? COLORS.warning500 : COLORS.danger500;
+}
 
 export default function ScoreHero({ caption, captionVariant = 'medium', captionStyle, score, total, currentStreak, overallStreak }) {
   const percentage = total ? (score / total) * 100 : 0;
 
   return (
-    <>
-      <AppText variant={captionVariant} style={[{ color: COLORS.slate500, fontSize: 13 }, captionStyle]}>
+    <View style={tw`items-center self-stretch`}>
+      <AppText variant={captionVariant} style={[tw`text-[13px] text-slate-500`, captionStyle]}>
         {caption}
       </AppText>
-      <AppText variant="extraBold" style={{ marginTop: 6, fontSize: 34, color: COLORS.brand600 }}>
-        {score}/{total}
+      <AppText variant="extraBold" style={[tw`mt-1 text-[44px] text-slate-900`, { letterSpacing: -1 }]}>
+        {score}
+        <AppText variant="bold" style={tw`text-2xl text-slate-500`}>
+          /{total}
+        </AppText>
       </AppText>
-      <AppText variant="semiBold" style={{ marginTop: 10, fontSize: 14, color: COLORS.slate700, textAlign: 'center' }}>
+      <ProgressBar value={percentage} color={barColor(percentage)} height={8} style={tw`mt-3 self-stretch`} />
+      <AppText variant="semiBold" style={tw`mt-4 text-sm text-slate-700 text-center`}>
         {getMotivationalMessage(percentage)}
       </AppText>
       <StreakBadges currentStreak={currentStreak} overallStreak={overallStreak} />
-    </>
+    </View>
   );
 }

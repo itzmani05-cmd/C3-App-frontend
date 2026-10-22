@@ -1,49 +1,45 @@
 import React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
+import PressableScale from '../ui/PressableScale';
+import { haptics } from '../../utils/haptics';
+import { Check } from '../../icons';
 import AppText from '../ui/AppText';
 import BilingualText from '../ui/BilingualText';
 import QuestionImage from './QuestionImage';
-import { COLORS, RADII } from '../../theme';
+import { COLORS } from '../../theme';
 
+// Both palettes share one look now (rounded rows, a lettered badge, brand-blue selection, green for correct);
+// they differ only in the spacing the old screens expect.
 const PALETTES = {
-  brand: {
-    row: { borderColor: COLORS.slate200, backgroundColor: COLORS.white, borderRadius: RADII.xl, marginTop: 10 },
-    selectedRow: { borderColor: COLORS.brand500, backgroundColor: COLORS.brand50 },
-    indicator: COLORS.slate300,
-    indicatorSelected: COLORS.brand600,
-    letter: COLORS.slate700,
-    text: COLORS.slate700,
-  },
-  blue: {
-    row: { borderColor: COLORS.gray200, backgroundColor: COLORS.white, borderRadius: RADII.md, marginBottom: 10 },
-    selectedRow: { borderColor: COLORS.blue300, backgroundColor: COLORS.blue50 },
-    correctRow: { borderColor: COLORS.green300, backgroundColor: COLORS.green50 },
-    indicator: COLORS.gray300,
-    indicatorSelected: COLORS.blue600,
-    indicatorCorrect: COLORS.green600,
-    letter: COLORS.white,
-    text: COLORS.gray700,
-  },
+  brand: { row: { marginTop: 10 } },
+  blue: { row: { marginBottom: 10 } },
 };
 
 export const optionLetter = (index) => String.fromCharCode(65 + index);
 
-function Indicator({ multiple, index, active, color, letterColor }) {
+function stateColors({ selected, correct }) {
+  if (correct) return { border: COLORS.green300, background: COLORS.green50, badge: COLORS.green600, badgeText: COLORS.white, text: COLORS.slate900 };
+  if (selected) return { border: COLORS.brand600, background: COLORS.brand50, badge: COLORS.brand600, badgeText: COLORS.white, text: COLORS.slate900 };
+  return { border: COLORS.slate200, background: COLORS.white, badge: COLORS.slate100, badgeText: COLORS.slate600, text: COLORS.slate700 };
+}
+
+function Badge({ multiple, index, active, colors }) {
   if (multiple) {
     return (
-      <View style={[checkboxStyle, { borderColor: active ? color : COLORS.slate300, backgroundColor: active ? color : COLORS.white }]}>
-        {active ? (
-          <AppText variant="bold" style={{ color: COLORS.white, fontSize: 13 }}>
-            ✓
-          </AppText>
-        ) : null}
+      <View
+        style={[
+          checkboxStyle,
+          { borderColor: active ? colors.badge : COLORS.slate300, backgroundColor: active ? colors.badge : COLORS.white },
+        ]}
+      >
+        {active ? <Check size={14} color={COLORS.white} strokeWidth={3} /> : null}
       </View>
     );
   }
 
   return (
-    <View style={[circleStyle, { backgroundColor: color }]}>
-      <AppText variant="bold" style={{ color: active ? COLORS.white : letterColor, fontSize: 13 }}>
+    <View style={[circleStyle, { backgroundColor: colors.badge }]}>
+      <AppText variant="bold" style={{ color: colors.badgeText, fontSize: 13 }}>
         {optionLetter(index)}
       </AppText>
     </View>
@@ -63,48 +59,51 @@ export default function ChoiceOption({
   disabled = false,
   onPress,
 }) {
-  const colors = PALETTES[palette];
-  const indicatorColor = correct ? colors.indicatorCorrect : selected ? colors.indicatorSelected : colors.indicator;
-  const stateRow = correct ? colors.correctRow : selected ? colors.selectedRow : null;
+  const colors = stateColors({ selected, correct });
+  const active = selected || correct;
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
+    <PressableScale
+      onPress={() => {
+        haptics.tap();
+        onPress?.();
+      }}
       disabled={disabled}
-      activeOpacity={0.75}
-      style={[rowStyle, colors.row, stateRow, dimmed ? { opacity: 0.5 } : null]}
+      scaleTo={0.985}
+      accessibilityRole={multiple ? 'checkbox' : 'radio'}
+      accessibilityLabel={`Option ${optionLetter(index)}. ${text}`}
+      accessibilityState={{ selected: active, disabled }}
+      style={[
+        rowStyle,
+        PALETTES[palette]?.row,
+        { borderColor: colors.border, backgroundColor: colors.background, borderWidth: active ? 1.5 : 1 },
+        dimmed ? { opacity: 0.5 } : null,
+      ]}
     >
-      <Indicator
-        multiple={multiple}
-        index={index}
-        active={selected || correct}
-        color={multiple ? (selected ? colors.indicatorSelected : null) : indicatorColor}
-        letterColor={colors.letter}
-      />
+      <Badge multiple={multiple} index={index} active={active} colors={colors} />
       {multiple && showLetter ? (
         <AppText variant="semiBold" style={{ width: 20, color: colors.text, fontSize: 14 }}>
           {optionLetter(index)}.
         </AppText>
       ) : null}
-      <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, color: colors.text }}>
+      <BilingualText variant="medium" style={{ flex: 1, fontSize: 14, lineHeight: 20, color: colors.text }}>
         {text}
       </BilingualText>
       {image ? <QuestionImage uri={image} height={100} /> : null}
-    </TouchableOpacity>
+    </PressableScale>
   );
 }
 
 export function MultiSelectHint({ style }) {
-  return (
-    <AppText style={[{ fontSize: 12, color: COLORS.slate500, marginTop: 6 }, style]}>Select all that apply.</AppText>
-  );
+  return <AppText style={[{ fontSize: 12, color: COLORS.slate500, marginTop: 6 }, style]}>Select all that apply.</AppText>;
 }
 
 const rowStyle = {
   flexDirection: 'row',
   alignItems: 'center',
-  padding: 12,
-  borderWidth: 1,
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+  borderRadius: 10,
 };
 
 const circleStyle = {
@@ -113,7 +112,7 @@ const circleStyle = {
   borderRadius: 14,
   justifyContent: 'center',
   alignItems: 'center',
-  marginRight: 10,
+  marginRight: 12,
 };
 
 const checkboxStyle = {
@@ -123,5 +122,5 @@ const checkboxStyle = {
   borderWidth: 2,
   justifyContent: 'center',
   alignItems: 'center',
-  marginRight: 10,
+  marginRight: 12,
 };

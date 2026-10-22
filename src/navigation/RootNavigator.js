@@ -4,6 +4,7 @@ import LoginScreen from '../screens/LoginScreen';
 import TabNavigation from './TabNavigation';
 import TopicsScreen from '../screens/TopicsScreen';
 import QuestionsScreen from '../screens/QuestionsScreen';
+import PracticeScreen from '../screens/PracticeScreen';
 import ResultScreen from '../screens/ResultScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import DailyChallengeScreen from '../screens/DailyChallengeScreen';
@@ -13,8 +14,6 @@ import DailyChallengeReviewScreen from '../screens/DailyChallengeReviewScreen';
 import DailyChallengeHistoryScreen from '../screens/DailyChallengeHistoryScreen';
 import DailyChallengeProgressScreen from '../screens/DailyChallengeProgressScreen';
 import DailyChallengeLeaderboardScreen from '../screens/DailyChallengeLeaderboardScreen';
-import DailyChallengeTopicsScreen from '../screens/DailyChallengeTopicsScreen';
-import DailyChallengeUnitHistoryScreen from '../screens/DailyChallengeUnitHistoryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,6 +22,7 @@ const SCREENS = {
   MainApp: TabNavigation,
   TopicsScreen,
   QuestionsScreen,
+  PracticeScreen,
   ResultScreen,
   NotificationsScreen,
   DailyChallengeScreen,
@@ -32,8 +32,6 @@ const SCREENS = {
   DailyChallengeHistoryScreen,
   DailyChallengeProgressScreen,
   DailyChallengeLeaderboardScreen,
-  DailyChallengeTopicsScreen,
-  DailyChallengeUnitHistoryScreen,
 };
 
 export default function RootNavigator({ initialRoute }) {

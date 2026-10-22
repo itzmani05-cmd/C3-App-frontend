@@ -1,32 +1,42 @@
 import React from 'react';
 import { View } from 'react-native';
+import { TrendingDown, TrendingUp } from '../icons';
 import AppText from '../components/ui/AppText';
 import AppButton from '../components/ui/AppButton';
 import Card from '../components/ui/Card';
 import Screen from '../components/ui/Screen';
 import ScoreHero from '../components/dailyChallenge/ScoreHero';
 import { plural } from '../utils/format';
-import { COLORS, RADII } from '../theme';
+import { COLORS, tw } from '../theme';
 
 function ScoreComparison({ previousScore, score, total }) {
   if (typeof previousScore !== 'number') return null;
   const improvement = score - previousScore;
+  const Icon = improvement >= 0 ? TrendingUp : TrendingDown;
+  const color = improvement >= 0 ? COLORS.success600 : COLORS.red600;
 
   return (
-    <>
-      <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
-        <AppText style={{ color: COLORS.slate500 }}>
-          Previous Score: {previousScore}/{total}
-        </AppText>
-        <AppText style={{ color: COLORS.slate500 }}>
-          Current Score: {score}/{total}
+    <View style={tw`mt-5 flex-row items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3.5`}>
+      <View>
+        <AppText style={tw`text-xs text-slate-500`}>Previous</AppText>
+        <AppText variant="bold" style={tw`mt-0.5 text-[15px] text-slate-900`}>
+          {previousScore}/{total}
         </AppText>
       </View>
-      <AppText variant="bold" style={{ marginTop: 8, color: improvement >= 0 ? COLORS.success600 : COLORS.danger600 }}>
-        Improvement: {improvement >= 0 ? '+' : ''}
-        {improvement}
-      </AppText>
-    </>
+      <View style={tw`flex-row items-center`}>
+        <Icon size={16} color={color} />
+        <AppText variant="bold" style={[tw`ml-1.5 text-sm`, { color }]}>
+          {improvement >= 0 ? '+' : ''}
+          {improvement}
+        </AppText>
+      </View>
+      <View style={tw`items-end`}>
+        <AppText style={tw`text-xs text-slate-500`}>Current</AppText>
+        <AppText variant="bold" style={tw`mt-0.5 text-[15px] text-slate-900`}>
+          {score}/{total}
+        </AppText>
+      </View>
+    </View>
   );
 }
 
@@ -52,40 +62,24 @@ export default function DailyChallengeResultScreen({ route, navigation }) {
       : 'Correct answers and explanations will be available when this challenge expires.';
 
   return (
-    <Screen title="C3 Daily Challenge" onBack={goHome} scroll={false}>
-      <View style={{ padding: 16 }}>
-        <Card elevation="lg" style={{ borderRadius: RADII.xxxl, padding: 20 }}>
-          <ScoreHero
-            caption={`Attempt ${attemptNumber} of ${maxAttempts}`}
-            score={score}
-            total={totalQuestions}
-            currentStreak={currentStreak}
-            overallStreak={overallStreak}
-          />
-          <ScoreComparison previousScore={previousScore} score={score} total={totalQuestions} />
+    <Screen title="Challenge Result" onBack={goHome}>
+      <Card elevation="md" style={tw`p-5`}>
+        <ScoreHero
+          caption={`Attempt ${attemptNumber} of ${maxAttempts}`}
+          score={score}
+          total={totalQuestions}
+          currentStreak={currentStreak}
+          overallStreak={overallStreak}
+        />
+        <ScoreComparison previousScore={previousScore} score={score} total={totalQuestions} />
 
-          <View style={noteStyle}>
-            <AppText style={{ color: COLORS.slate600, lineHeight: 20 }}>{note}</AppText>
-          </View>
+        <View style={tw`mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3.5`}>
+          <AppText style={tw`text-[13px] leading-5 text-slate-600`}>{note}</AppText>
+        </View>
 
-          <AppButton
-            label={attemptsRemaining > 0 ? 'Try Again' : 'Back to Challenge'}
-            tone="brand"
-            onPress={goToChallenge}
-            style={{ marginTop: 20 }}
-          />
-          <AppButton label="Go to Home" tone="secondary" onPress={goHome} style={{ marginTop: 12, borderRadius: RADII.xl }} />
-        </Card>
-      </View>
+        <AppButton label={attemptsRemaining > 0 ? 'Try Again' : 'Back to Challenge'} onPress={goToChallenge} style={tw`mt-5`} />
+        <AppButton label="Go to Home" tone="secondary" onPress={goHome} style={tw`mt-3`} />
+      </Card>
     </Screen>
   );
 }
-
-const noteStyle = {
-  marginTop: 18,
-  padding: 14,
-  borderRadius: RADII.xl,
-  backgroundColor: COLORS.slate50,
-  borderWidth: 1,
-  borderColor: COLORS.slate200,
-};

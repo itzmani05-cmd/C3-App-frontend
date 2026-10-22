@@ -1,8 +1,11 @@
 import React from 'react';
+import { View } from 'react-native';
+import { Lock } from '../../icons';
 import AppText from '../ui/AppText';
 import Card from '../ui/Card';
+import IconTile from '../ui/IconTile';
 import { plural } from '../../utils/format';
-import { COLORS } from '../../theme';
+import { tw } from '../../theme';
 
 function lockedMessage(attemptNumber, maxAttempts) {
   const attemptsLeft =
@@ -16,11 +19,14 @@ function lockedMessage(attemptNumber, maxAttempts) {
 
 export default function LockedReviewCard({ attemptNumber, maxAttempts }) {
   return (
-    <Card elevation="card" style={{ marginTop: 8, borderRadius: 18, padding: 18, borderColor: COLORS.gray200 }}>
-      <AppText variant="bold" style={{ color: COLORS.black, fontSize: 17 }}>
-        Detailed review is locked
-      </AppText>
-      <AppText style={{ marginTop: 8, color: COLORS.gray500, lineHeight: 21 }}>{lockedMessage(attemptNumber, maxAttempts)}</AppText>
+    <Card elevation="sm" style={tw`mt-2 flex-row items-start`}>
+      <IconTile icon={Lock} tone="neutral" />
+      <View style={tw`flex-1 ml-3`}>
+        <AppText variant="bold" style={tw`text-base text-slate-900`}>
+          Detailed review is locked
+        </AppText>
+        <AppText style={tw`mt-1.5 text-[13px] leading-5 text-slate-500`}>{lockedMessage(attemptNumber, maxAttempts)}</AppText>
+      </View>
     </Card>
   );
 }

@@ -1,56 +1,57 @@
-import React from 'react';
-import { View } from 'react-native';
-import { Search } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { TouchableOpacity, View } from 'react-native';
+import { Search, X } from '../../icons';
 import AppTextInput from './AppTextInput';
-import { COLORS, RADII } from '../../theme';
+import { COLORS } from '../../theme';
 
 export default function SearchBar({ value, onChangeText, placeholder = 'Search...' }) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={wrapperStyle}>
-      <View style={fieldStyle}>
-        <Search size={16} color={COLORS.gray400} />
+      <View style={[fieldStyle, { borderColor: focused ? COLORS.brand600 : COLORS.slate200, borderWidth: focused ? 1.5 : 1 }]}>
+        <Search size={17} color={focused ? COLORS.brand600 : COLORS.slate400} />
         <AppTextInput
           placeholder={placeholder}
+          placeholderTextColor={COLORS.slate500}
           style={inputStyle}
           value={value}
           onChangeText={onChangeText}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
           autoCapitalize="none"
           autoCorrect={false}
+          returnKeyType="search"
+          accessibilityLabel={placeholder}
         />
+        {value ? (
+          <TouchableOpacity onPress={() => onChangeText('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} accessibilityLabel="Clear search">
+            <X size={16} color={COLORS.slate400} />
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );
 }
 
 const wrapperStyle = {
-  height: 48,
   marginTop: 16,
-  flexDirection: 'row',
   paddingHorizontal: 16,
-  alignItems: 'center',
 };
 
 const fieldStyle = {
-  flex: 1,
   backgroundColor: COLORS.white,
-  height: 48,
+  height: 46,
   flexDirection: 'row',
-  borderRadius: RADII.md,
+  borderRadius: 10,
   alignItems: 'center',
   paddingHorizontal: 12,
-  borderColor: COLORS.gray200,
-  borderWidth: 1,
-  marginRight: 10,
-  shadowColor: COLORS.slate900,
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.04,
-  shadowRadius: 6,
-  elevation: 1,
 };
 
 const inputStyle = {
   flex: 1,
-  color: COLORS.black,
+  color: COLORS.slate900,
   fontSize: 14,
   marginLeft: 10,
+  paddingVertical: 0,
 };

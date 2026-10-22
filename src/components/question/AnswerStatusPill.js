@@ -12,7 +12,7 @@ const PALETTES = {
   },
   blue: {
     skipped: { backgroundColor: COLORS.gray100, color: COLORS.gray500 },
-    correct: { backgroundColor: COLORS.blue100, color: COLORS.blue600 },
+    correct: { backgroundColor: COLORS.successSoft, color: COLORS.success600 },
     incorrect: { backgroundColor: COLORS.red100, color: COLORS.red600 },
     style: { paddingHorizontal: 12, paddingVertical: 7 },
     text: { fontSize: 12 },

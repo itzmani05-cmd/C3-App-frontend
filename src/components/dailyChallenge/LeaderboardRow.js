@@ -1,46 +1,65 @@
 import React from 'react';
 import { View } from 'react-native';
+import { Flame, Trophy } from '../../icons';
 import AppText from '../ui/AppText';
 import { plural } from '../../utils/format';
-import { COLORS, RADII } from '../../theme';
+import { COLORS, tw } from '../../theme';
 
-const RANK_MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' };
+// Top three get a coloured rank badge; everyone else a plain number.
+const PODIUM = {
+  1: { backgroundColor: '#FEF3C7', color: '#B45309', borderColor: '#FCD34D' },
+  2: { backgroundColor: '#F1F5F9', color: '#475569', borderColor: '#CBD5E1' },
+  3: { backgroundColor: '#FFEDD5', color: '#9A3412', borderColor: '#FDBA74' },
+};
 
-function describe(entry) {
-  const parts = [`${plural(entry.challengesCompleted, 'challenge')} completed`];
-  if (entry.currentStreak > 0) parts.push(`🔥 ${entry.currentStreak} day streak`);
-  if (entry.overallStreak > 0) parts.push(`🏆 ${entry.overallStreak} overall`);
-  return parts.join(' • ');
-}
+function RankBadge({ rank, isMe }) {
+  const podium = PODIUM[rank];
+  const palette = podium || { backgroundColor: isMe ? COLORS.brand100 : COLORS.slate100, color: isMe ? COLORS.brand700 : COLORS.slate600, borderColor: 'transparent' };
 
-export default function LeaderboardRow({ entry }) {
   return (
-    <View style={[rowStyle, entry.isMe ? { backgroundColor: COLORS.brand50 } : null]}>
-      <View style={{ width: 32, alignItems: 'center' }}>
-        <AppText variant="extraBold" style={{ fontSize: 14, color: entry.isMe ? COLORS.brand600 : COLORS.slate600 }}>
-          {RANK_MEDAL[entry.rank] || entry.rank}
-        </AppText>
-      </View>
-
-      <View style={{ flex: 1, marginLeft: 12 }}>
-        <AppText variant="bold" style={{ fontSize: 14, color: COLORS.slate900 }} numberOfLines={1}>
-          {entry.name}
-          {entry.isMe ? ' (You)' : ''}
-        </AppText>
-        <AppText style={{ marginTop: 2, fontSize: 12, color: COLORS.slate500 }}>{describe(entry)}</AppText>
-      </View>
-
-      <AppText variant="extraBold" style={{ fontSize: 16, color: entry.totalScore < 0 ? COLORS.danger600 : COLORS.brand600 }}>
-        {entry.totalScore}
+    <View
+      style={[
+        tw`w-8 h-8 rounded-full items-center justify-center`,
+        { backgroundColor: palette.backgroundColor, borderWidth: 1, borderColor: palette.borderColor },
+      ]}
+    >
+      <AppText variant="extraBold" style={{ fontSize: 13, color: palette.color }}>
+        {rank}
       </AppText>
     </View>
   );
 }
 
-const rowStyle = {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 12,
-  paddingHorizontal: 10,
-  borderRadius: RADII.xl,
-};
+export default function LeaderboardRow({ entry }) {
+  return (
+    <View style={[tw`flex-row items-center py-3 px-2.5 rounded-xl`, entry.isMe ? { backgroundColor: COLORS.brand50 } : null]}>
+      <RankBadge rank={entry.rank} isMe={entry.isMe} />
+
+      <View style={tw`flex-1 ml-3`}>
+        <AppText variant="bold" style={tw`text-sm text-slate-900`} numberOfLines={1}>
+          {entry.name}
+          {entry.isMe ? ' (You)' : ''}
+        </AppText>
+        <View style={tw`mt-0.5 flex-row items-center flex-wrap`}>
+          <AppText style={tw`text-xs text-slate-500`}>{plural(entry.challengesCompleted, 'challenge')}</AppText>
+          {entry.currentStreak > 0 ? (
+            <View style={tw`flex-row items-center ml-2.5`}>
+              <Flame size={12} color={COLORS.amber600} />
+              <AppText style={tw`ml-0.5 text-xs text-slate-500`}>{entry.currentStreak}</AppText>
+            </View>
+          ) : null}
+          {entry.overallStreak > 0 ? (
+            <View style={tw`flex-row items-center ml-2.5`}>
+              <Trophy size={12} color={COLORS.brand600} />
+              <AppText style={tw`ml-0.5 text-xs text-slate-500`}>{entry.overallStreak}</AppText>
+            </View>
+          ) : null}
+        </View>
+      </View>
+
+      <AppText variant="extraBold" style={{ fontSize: 16, color: entry.totalScore < 0 ? COLORS.red600 : COLORS.brand700 }}>
+        {entry.totalScore}
+      </AppText>
+    </View>
+  );
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, Pressable, View, TouchableOpacity } from 'react-native';
-import { X } from 'lucide-react-native';
+import { X } from '../../icons';
 import AppText from '../ui/AppText';
 import { COLORS, RADII, SHADOWS } from '../../theme';
 
@@ -293,13 +293,13 @@ export default function ScientificCalculator({ visible, onClose }) {
                   </TouchableOpacity>
                 ))}
               </View>
-              <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={{ padding: 4 }}>
+              <TouchableOpacity onPress={onClose} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Close calculator" style={{ padding: 4 }}>
                 <X size={16} color={COLORS.slate400} />
               </TouchableOpacity>
             </View>
           </View>
 
-          <View style={{ backgroundColor: COLORS.slate900, paddingHorizontal: 14, paddingVertical: 12, gap: 4 }}>
+          <View style={{ backgroundColor: COLORS.ink900, paddingHorizontal: 14, paddingVertical: 12, gap: 4 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <AppText numberOfLines={1} style={{ flex: 1, textAlign: 'right', fontSize: 11, color: COLORS.slate400 }}>
                 {topLine || ' '}

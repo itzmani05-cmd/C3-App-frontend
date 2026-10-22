@@ -5,7 +5,7 @@ import { COLORS } from '../../theme';
 const TONES = {
   Done: { backgroundColor: COLORS.green100, color: COLORS.green600 },
   Open: { backgroundColor: COLORS.blue50, color: COLORS.blue600 },
-  Locked: { backgroundColor: COLORS.gray100, color: COLORS.gray400 },
+  Locked: { backgroundColor: COLORS.gray100, color: COLORS.slate500 },
   Close: { backgroundColor: COLORS.blue50, color: COLORS.blue600 },
 };
 

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View } from 'react-native';
+import { ListChecks, Target } from '../icons';
 import AppButton from '../components/ui/AppButton';
 import Screen from '../components/ui/Screen';
 import SectionTitle from '../components/ui/SectionTitle';
@@ -17,7 +18,9 @@ const PASS_PERCENTAGE = 80;
 export default function ResultScreen({ route, navigation }) {
   const { answers = [], questions = [], result = {}, topicId, subtopicId, topicName, subtopicName, unitName } = route.params || {};
 
-  const normalizedQuestions = useMemo(() => (Array.isArray(questions) ? questions.map(normalizeQuestionData) : []), [questions]);
+  // The quiz itself carries no answers; the submit response includes the full questions once review is unlocked.
+  const reviewSource = Array.isArray(result?.review) && result.review.length > 0 ? result.review : questions;
+  const normalizedQuestions = useMemo(() => (Array.isArray(reviewSource) ? reviewSource.map(normalizeQuestionData) : []), [reviewSource]);
   const answersByQuestionId = useMemo(() => Object.fromEntries(answers.map((a) => [a.questionId, a])), [answers]);
 
   const score = Number(result?.score) || 0;
@@ -54,11 +57,11 @@ export default function ResultScreen({ route, navigation }) {
 
   return (
     <Screen title="Quiz Result" onBack={goBack} background={COLORS.appBackground}>
-      <ResultSummaryCard pathLabel={pathLabel} quizLabel={quizLabel} passed={passed} percentage={percentage} />
+      <ResultSummaryCard pathLabel={pathLabel} quizLabel={quizLabel} passed={passed} percentage={percentage} previousBest={result?.previousBest} />
 
-      <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
-        <StatCard label="Score" value={`${score}/${normalizedQuestions.length}`} accent={COLORS.blue600} style={statStyle} />
-        <StatCard label="Attempted" value={`${answers.length}`} accent={COLORS.gray900} style={statStyle} />
+      <View style={{ marginTop: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <StatCard label="Score" value={`${score}/${questions.length}`} accent={COLORS.brand700} icon={Target} tone="brand" style={statStyle} />
+        <StatCard label="Attempted" value={`${answers.length}`} icon={ListChecks} tone="accent" style={statStyle} />
       </View>
 
       {reviewUnlocked ? (
@@ -72,7 +75,7 @@ export default function ResultScreen({ route, navigation }) {
         <LockedReviewCard attemptNumber={result?.attemptNumber} maxAttempts={result?.maxAttempts} />
       )}
 
-      <View style={{ marginTop: 70 }}>
+      <View style={{ marginTop: 32 }}>
         <AppButton label={primary.label} onPress={primary.onPress} disabled={primary.disabled} />
         <AppButton label={secondary.label} tone="secondary" onPress={secondary.onPress} style={{ marginTop: 12 }} />
       </View>
@@ -81,8 +84,5 @@ export default function ResultScreen({ route, navigation }) {
 }
 
 const statStyle = {
-  width: '48%',
-  borderRadius: 16,
-  marginBottom: 12,
-  borderColor: COLORS.gray200,
+  width: '48.5%',
 };
