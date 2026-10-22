@@ -7,11 +7,19 @@
     "scheme": "c3app",
     "android": {
       "package": "com.c3institute.app",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 2,
       "permissions": [
         "android.permission.INTERNET",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.RECORD_AUDIO",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "ios": {
@@ -24,29 +32,39 @@
     "extra": {
       "API_URL": "https://c3-app-backend-3.onrender.com",
       "eas": {
-        "projectId": "1595038e-2d1a-4827-9cfe-04079faedab6"
+        "projectId": "88529227-82c2-4fe7-854a-fbfed1a9c8ac"
       }
     },
     "plugins": [
       "expo-font",
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Allow access to your photos to add images to questions.",
-          "cameraPermission": "Allow the app to use the camera for question images."
-        }
-      ],
       [
         "expo-notifications",
         {
           "icon": "./assets/C3AppLogo.png",
           "color": "#2563EB"
         }
-      ]
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0D1426",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow C3 Institute to use Face ID to unlock the app."
+        }
+      ],
+      "expo-status-bar"
     ],
     "runtimeVersion": "1.0.1",
     "updates": {
-      "url": "https://u.expo.dev/1595038e-2d1a-4827-9cfe-04079faedab6"
-    }
+      "url": "https://u.expo.dev/88529227-82c2-4fe7-854a-fbfed1a9c8ac"
+    },
+    "owner": "manikandan005"
   }
 }

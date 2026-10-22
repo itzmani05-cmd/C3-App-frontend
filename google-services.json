@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "97853558734",
+    "project_id": "c3-institute",
+    "storage_bucket": "c3-institute.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:97853558734:android:0910be30e1b580eaf2a59f",
+        "android_client_info": {
+          "package_name": "com.c3institute.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA30LBb2vO-zswbuYLITqUEUeIb1x63Lo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
