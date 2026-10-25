@@ -26,25 +26,7 @@ export function formatJoinDate(value) {
   return date ? `Joined ${date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}` : 'Member';
 }
 
-export function formatPercent(value) {
-  const numericValue = Number(value);
-  if (!Number.isFinite(numericValue)) return '0%';
-  return `${numericValue % 1 === 0 ? numericValue.toFixed(0) : numericValue.toFixed(1)}%`;
-}
-
-export function formatTimeRemaining(expiresAt) {
-  const diffMs = new Date(expiresAt).getTime() - Date.now();
-  if (diffMs <= 0) return 'Expired';
-
-  const totalMinutes = Math.floor(diffMs / (60 * 1000));
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-
-  if (days > 0) return `${days}d ${hours}h left`;
-  return `${hours}h ${totalMinutes % 60}m left`;
-}
-
-// Like formatTimeRemaining, but in the last hour it counts seconds too ("42m 18s left").
+// Time left until `expiresAt`, counting seconds in the last hour ("42m 18s left").
 export function formatCountdown(expiresAt) {
   const diffMs = new Date(expiresAt).getTime() - Date.now();
   if (!Number.isFinite(diffMs) || diffMs <= 0) return 'Expired';

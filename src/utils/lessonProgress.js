@@ -1,7 +1,7 @@
 // Counting completed lessons from the learning-path data (units -> topics -> lessons). A topic without lessons is itself
 // a lesson ("direct quiz"). Units that came from the plain content list have no topics and give a total of 0.
 
-export function topicLessons(topic) {
+function topicLessons(topic) {
   const subtopics = Array.isArray(topic?.subtopics) ? topic.subtopics : [];
   return topic?.isDirectLesson || subtopics.length === 0 ? [topic] : subtopics;
 }

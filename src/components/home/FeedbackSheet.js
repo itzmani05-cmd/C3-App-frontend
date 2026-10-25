@@ -53,10 +53,15 @@ function StarRating({ value, onChange }) {
  * The feedback form: an optional star rating, what it is about, and the message. The student's draft is kept if they
  * close it without sending. After a successful send it shows a thank-you and clears itself.
  */
-export default function FeedbackSheet({ visible, onClose }) {
+export default function FeedbackSheet({ visible, onClose, question }) {
   const insets = useSafeAreaInsets();
+  // Reporting a question: the form is about that question, so it is labelled with its number, which is also put in front of
+  // the message the team receives. The rating and category do not apply.
+  const questionLabel = question ? `Question ${question.number}${question.context ? ` · ${question.context}` : ''}` : '';
+  const prefix = question ? `${questionLabel}: ` : '';
+  const maxLength = MAX_LENGTH - prefix.length;
   const [rating, setRating] = useState(0);
-  const [category, setCategory] = useState('general');
+  const [category, setCategory] = useState(question ? 'content' : 'general');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -85,7 +90,7 @@ export default function FeedbackSheet({ visible, onClose }) {
       setTimeout(() => {
         setSent(false);
         setRating(0);
-        setCategory('general');
+        setCategory(question ? 'content' : 'general');
         setMessage('');
         setError('');
       }, 300);
@@ -98,7 +103,7 @@ export default function FeedbackSheet({ visible, onClose }) {
     setSubmitting(true);
     setError('');
     try {
-      await sendFeedback({ category, rating, message: message.trim() });
+      await sendFeedback({ category, rating, message: `${prefix}${message.trim()}`, question });
       setSent(true);
     } catch (err) {
       setError(
@@ -139,10 +144,10 @@ export default function FeedbackSheet({ visible, onClose }) {
               <View style={tw`flex-row items-start justify-between px-5`}>
                 <View style={tw`flex-1 pr-3`}>
                   <AppText type="title" style={tw`text-slate-900`}>
-                    Send feedback
+                    {question ? 'Report a problem' : 'Send feedback'}
                   </AppText>
                   <AppText type="small" style={tw`mt-0.5 text-slate-500`}>
-                    Tell us what is working and what to improve.
+                    {question ? 'Tell us what is wrong with this question.' : 'Tell us what is working and what to improve.'}
                   </AppText>
                 </View>
                 <TouchableOpacity
@@ -161,48 +166,64 @@ export default function FeedbackSheet({ visible, onClose }) {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={[tw`px-5 pt-5`, { paddingBottom: insets.bottom + 16 }]}
               >
-                <AppText type="heading" style={tw`mb-2.5 text-slate-900`}>
-                  How would you rate the app?
-                </AppText>
-                <StarRating value={rating} onChange={setRating} />
+                {question ? (
+                  <View style={tw`self-start rounded-full bg-brand-50 border border-brand-100 px-3 py-1.5`} accessibilityLabel={`About ${questionLabel}`}>
+                    <AppText variant="bold" style={tw`text-[13px] text-brand-700`}>
+                      {questionLabel}
+                    </AppText>
+                  </View>
+                ) : (
+                  <>
+                    <AppText type="heading" style={tw`mb-2.5 text-slate-900`}>
+                      How would you rate the app?
+                    </AppText>
+                    <StarRating value={rating} onChange={setRating} />
 
-                <AppText type="heading" style={tw`mt-6 mb-2.5 text-slate-900`}>
-                  What is it about?
-                </AppText>
-                <View style={tw`flex-row flex-wrap`}>
-                  {CATEGORIES.map((item) => {
-                    const active = item.id === category;
-                    return (
-                      <PressableScale
-                        key={item.id}
-                        onPress={() => setCategory(item.id)}
-                        scaleTo={0.95}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected: active }}
-                        style={[
-                          tw`mr-2 mb-2 rounded-full border px-3.5 py-2`,
-                          active ? { backgroundColor: COLORS.brand600, borderColor: COLORS.brand600 } : { backgroundColor: COLORS.white, borderColor: COLORS.slate300 },
-                        ]}
-                      >
-                        <AppText variant="semiBold" style={{ fontSize: 13, color: active ? COLORS.white : COLORS.slate700 }}>
-                          {item.label}
-                        </AppText>
-                      </PressableScale>
-                    );
-                  })}
-                </View>
+                    <AppText type="heading" style={tw`mt-6 mb-2.5 text-slate-900`}>
+                      What is it about?
+                    </AppText>
+                    <View style={tw`flex-row flex-wrap`}>
+                      {CATEGORIES.map((item) => {
+                        const active = item.id === category;
+                        return (
+                          <PressableScale
+                            key={item.id}
+                            onPress={() => setCategory(item.id)}
+                            scaleTo={0.95}
+                            accessibilityRole="button"
+                            accessibilityState={{ selected: active }}
+                            style={[
+                              tw`mr-2 mb-2 rounded-full border px-3.5 py-2`,
+                              active ? { backgroundColor: COLORS.brand600, borderColor: COLORS.brand600 } : { backgroundColor: COLORS.white, borderColor: COLORS.slate300 },
+                            ]}
+                          >
+                            <AppText variant="semiBold" style={{ fontSize: 13, color: active ? COLORS.white : COLORS.slate700 }}>
+                              {item.label}
+                            </AppText>
+                          </PressableScale>
+                        );
+                      })}
+                    </View>
+                  </>
+                )}
 
                 <AppText type="heading" style={tw`mt-4 mb-2.5 text-slate-900`}>
-                  Your message
+                  {question ? "What's wrong with it?" : 'Your message'}
                 </AppText>
                 <TextInput
                   value={message}
                   onChangeText={setMessage}
                   editable={!submitting}
                   multiline
-                  maxLength={MAX_LENGTH}
+                  maxLength={maxLength}
                   textAlignVertical="top"
-                  placeholder={category === 'bug' ? 'What went wrong, and where in the app?' : 'Write your feedback here...'}
+                  placeholder={
+                    question
+                      ? 'For example: the answer is wrong, a word is unclear or the image is missing.'
+                      : category === 'bug'
+                        ? 'What went wrong, and where in the app?'
+                        : 'Write your feedback here...'
+                  }
                   placeholderTextColor={COLORS.slate500}
                   accessibilityLabel="Your feedback message"
                   style={[
@@ -215,7 +236,7 @@ export default function FeedbackSheet({ visible, onClose }) {
                     {trimmedLength > 0 && tooShort ? `Add a little more detail (at least ${MIN_LENGTH} characters).` : ' '}
                   </AppText>
                   <AppText type="caption" style={tw`text-slate-500`}>
-                    {message.length}/{MAX_LENGTH}
+                    {message.length}/{maxLength}
                   </AppText>
                 </View>
 

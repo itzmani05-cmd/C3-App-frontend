@@ -7,6 +7,7 @@ import FormattedQuestionText from '../quiz/FormattedQuestionText';
 import Card from '../ui/Card';
 import QuestionImage from '../question/QuestionImage';
 import AnswerStatusPill from '../question/AnswerStatusPill';
+import ReportQuestionButton from '../question/ReportQuestionButton';
 import ExplanationBox from '../question/ExplanationBox';
 import { optionLetter } from '../question/ChoiceOption';
 import { evaluateAnswer } from '../../utils/questionFormat';
@@ -79,7 +80,16 @@ export default function ReviewQuestionCard({ question, index, dateLabel }) {
             </AppText>
           ) : null}
         </View>
-        <AnswerStatusPill answered={answered} correct={correct} />
+        <View style={tw`items-end`}>
+          <AnswerStatusPill answered={answered} correct={correct} />
+          <ReportQuestionButton
+            questionId={question.questionId}
+            number={index + 1}
+            source="review"
+            context={dateLabel ? `Daily Challenge ${dateLabel}` : 'Daily Challenge'}
+            style={tw`mt-2`}
+          />
+        </View>
       </View>
 
       <View style={tw`mt-2`}>

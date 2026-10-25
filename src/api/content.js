@@ -3,17 +3,17 @@ import { networkFirst } from '../utils/offlineCache';
 
 const asArray = (value) => (Array.isArray(value) ? value : []);
 
-export async function getUnits(examId) {
+async function getUnits(examId) {
   const { data } = await api.get('/api/content/units', { params: examId ? { examId } : {} });
   return asArray(data);
 }
 
-export async function getTopics(unitId) {
+async function getTopics(unitId) {
   const { data } = await api.get(`/api/content/topics/${unitId}`);
   return asArray(data);
 }
 
-export async function getSubtopics(topicId) {
+async function getSubtopics(topicId) {
   const { data } = await api.get(`/api/content/subtopics/${topicId}`);
   return asArray(data);
 }
@@ -32,18 +32,6 @@ export async function getQuiz({ topicId, subtopicId, sessionId }) {
   const url = subtopicId ? `/api/quiz/subtopic/${subtopicId}` : `/api/quiz/topic/${topicId}`;
   const { data } = await api.get(url, { params: sessionId ? { sessionId } : undefined });
   return data;
-}
-
-// Practice questions are a random sample, so they are not refreshed in the background: the saved set is only used
-// when the request fails, which lets a lesson that was opened before be practised offline.
-export function getPracticeQuestions({ topicId, subtopicId }) {
-  return networkFirst(`practice:${subtopicId || topicId}`, async (options) => {
-    const { data } = await api.get('/api/quiz/practice', {
-      ...options,
-      params: subtopicId ? { subtopicId } : { topicId },
-    });
-    return asArray(data?.questions);
-  });
 }
 
 // One page of a lesson's practice questions in a fixed order, with the student's saved place. Without an `offset` the

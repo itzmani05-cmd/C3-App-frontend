@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import AppText from './AppText';
 import { COLORS, RADII } from '../../theme';
 
-export const PILL_TONES = {
+const PILL_TONES = {
   neutral: { backgroundColor: COLORS.slate100, color: COLORS.slate500 },
   brand: { backgroundColor: COLORS.brand50, color: COLORS.brand600 },
   success: { backgroundColor: COLORS.successSoft, color: COLORS.success600 },

@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import AppText from '../ui/AppText';
 import Card from '../ui/Card';
 import QuestionImage from '../question/QuestionImage';
+import ReportQuestionButton from '../question/ReportQuestionButton';
 import ChoiceOption, { MultiSelectHint } from '../question/ChoiceOption';
 import NumericalAnswerInput from '../question/NumericalAnswerInput';
 import FormattedQuestionText from './FormattedQuestionText';
@@ -64,13 +65,16 @@ function MultipleChoice({ question, answer, onToggle }) {
   );
 }
 
-export default function QuizQuestionCard({ question, index, answer, onSelect, onToggle, onNumericalChange }) {
+export default function QuizQuestionCard({ question, index, answer, onSelect, onToggle, onNumericalChange, reportContext }) {
   return (
     <Card elevation="sm" style={tw`mb-4`}>
       <View style={tw`mb-3`}>
-        <AppText variant="bold" style={[tw`mb-2.5 text-xs text-brand-700`, { letterSpacing: 0.8 }]}>
-          QUESTION {index + 1}
-        </AppText>
+        <View style={tw`flex-row items-center justify-between mb-2.5`}>
+          <AppText variant="bold" style={[tw`text-xs text-brand-700`, { letterSpacing: 0.8 }]}>
+            QUESTION {index + 1}
+          </AppText>
+          <ReportQuestionButton questionId={question._id} number={index + 1} source="quiz" context={reportContext} />
+        </View>
         <FormattedQuestionText text={question.questionText || question.question} />
       </View>
 

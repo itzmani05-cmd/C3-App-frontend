@@ -3,7 +3,7 @@
 const TOKEN_RE = /\$\$([\s\S]+?)\$\$|\$(?!\s)((?:\\[\s\S]|[^$\\])+?)(?<!\s)\$(?!\d)|\*\*([\s\S]+?)\*\*|\$(?=\\)((?:\\[\s\S]|[^$\\])+?)(?<!\s)\$/g;
 
 /** Splits text into plain runs, formulas and bold runs. Returns null when there is nothing special. */
-export function tokenizeMath(text) {
+function tokenizeMath(text) {
   if (!text || (!text.includes('$') && !text.includes('**'))) return null;
   const parts = [];
   let last = 0;

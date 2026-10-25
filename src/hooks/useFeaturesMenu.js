@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
-import { BookOpen, Bell, ChartColumn, History, House, KeyRound, LifeBuoy, Library, LogOut, MessageCircle, Trophy, UserRound, Zap } from '../icons';
+import { Bookmark, BookOpen, Bell, ChartColumn, History, House, KeyRound, LifeBuoy, Library, LogOut, MessageCircle, Trophy, UserRound, Zap } from '../icons';
 import FeaturesSheet from '../components/ui/FeaturesSheet';
 import FeedbackSheet from '../components/home/FeedbackSheet';
 import useLogout from './useLogout';
@@ -14,6 +14,7 @@ const GROUPS = [
     items: [
       { id: 'learn', label: 'Learn', helper: 'Units, topics and lessons', icon: Library, tone: 'brand', tab: 'Practice' },
       { id: 'practice', label: 'Practice', helper: 'Open a lesson, then tap Practice', icon: BookOpen, tone: 'accent', tab: 'Practice' },
+      { id: 'saved', label: 'Saved questions', helper: 'Questions you want to revise', icon: Bookmark, tone: 'brand', screen: 'BookmarksScreen' },
       { id: 'daily', label: 'Daily Challenge', helper: "Today's questions and streak", icon: Zap, tone: 'warning', tab: 'Today' },
       { id: 'home', label: 'Home', helper: 'Your dashboard', icon: House, tone: 'neutral', tab: 'Home' },
     ],

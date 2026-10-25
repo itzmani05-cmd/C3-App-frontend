@@ -9,21 +9,17 @@ import EmptyState from '../components/ui/EmptyState';
 import ErrorState from '../components/ui/ErrorState';
 import ProgressBar from '../components/ui/ProgressBar';
 import { QuestionSkeleton } from '../components/ui/Skeletons';
+import ScientificCalculator from '../components/question/ScientificCalculator';
 import PracticeQuestionCard, { EMPTY_PRACTICE_STATE } from '../components/quiz/PracticeQuestionCard';
 import ScoreRing from '../components/result/ScoreRing';
+import useBookmarks from '../hooks/useBookmarks';
 import useReduceMotion from '../hooks/useReduceMotion';
 import { getPracticeLesson, savePracticeProgress } from '../api/content';
-import { evaluateAnswer, getCorrectOptionIndex, normalizeQuestionData } from '../utils/questionFormat';
-import { PRACTICE_PAGE_SIZE, hasPracticed, mergePage, pageStartFor } from '../utils/practiceSession';
+import { normalizeQuestionData } from '../utils/questionFormat';
+import { PRACTICE_PAGE_SIZE, checkPracticeAnswer, hasPracticed, mergePage, pageStartFor } from '../utils/practiceSession';
 import { COLORS, contentColumn, tw } from '../theme';
 
 const normalizePage = (page) => ({ ...page, questions: page.questions.map(normalizeQuestionData) });
-
-function toAnswer(question, state) {
-  if (question.answerType === 'multiple') return { selectedOptionIndexes: state.selected };
-  if (question.answerType === 'numerical') return { selectedNumericalAnswer: state.numerical };
-  return { selectedOptionIndex: state.selected[0] };
-}
 
 // What the student did in this session. Practice is not scored; this just shows how they got on with the questions they
 // chose to answer. `total` and `practiced` cover the whole lesson, including earlier sessions.
@@ -36,7 +32,7 @@ function summarise(questions, states, viewed, total, practiced) {
     const state = states[question._id];
     if (!state) return;
     if (state.showAnswer) revealed += 1;
-    const result = evaluateAnswer(question, toAnswer(question, state), getCorrectOptionIndex(question));
+    const result = checkPracticeAnswer(question, state);
     if (result.answered) {
       answered += 1;
       if (result.correct) correct += 1;
@@ -108,6 +104,8 @@ export default function PracticeScreen({ route, navigation }) {
   const { topicId, subtopicId, topicName, subtopicName } = route.params || {};
   const insets = useSafeAreaInsets();
   const reduceMotion = useReduceMotion();
+  const bookmarks = useBookmarks();
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   // Questions arrive a page at a time and keep their place in the lesson, so "question 12 of 30" is always the same
   // question and the student can pick up where they stopped.
   const [status, setStatus] = useState('loading');
@@ -307,7 +305,18 @@ export default function PracticeScreen({ route, navigation }) {
                 transform: [{ translateX: slide.interpolate({ inputRange: [0, 1], outputRange: [slideDirection.current * 28, 0] }) }],
               }}
             >
-              <PracticeQuestionCard question={question} index={index} state={states[question._id]} onChange={(change) => patch(question._id, change)} />
+              <PracticeQuestionCard
+                question={question}
+                index={index}
+                state={states[question._id]}
+                onChange={(change) => patch(question._id, change)}
+                reportContext={subtopicName || topicName}
+                onOpenCalculator={() => setCalculatorOpen(true)}
+                bookmarked={bookmarks.isBookmarked(question._id)}
+                onToggleBookmark={() =>
+                  bookmarks.toggle(question._id, { topicId, subtopicId, lessonName: subtopicName || topicName })
+                }
+              />
             </Animated.View>
           </ScrollView>
         ) : pageError ? (
@@ -332,6 +341,7 @@ export default function PracticeScreen({ route, navigation }) {
       scroll={false}
     >
       {renderBody()}
+      <ScientificCalculator visible={calculatorOpen} onClose={() => setCalculatorOpen(false)} />
     </Screen>
   );
 }

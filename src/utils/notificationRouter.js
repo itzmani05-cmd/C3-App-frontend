@@ -11,22 +11,6 @@ const ROUTES = {
 
 const FALLBACK = { screen: 'NotificationsScreen' };
 
-export const NOTIFICATION_ICONS = {
-  daily_challenge_published: '🔔',
-  daily_challenge_reminder: '⏰',
-  daily_challenge_ending_soon: '⚠️',
-  assignment_new: '📝',
-  assignment_deadline: '⏳',
-  quiz_new: '🧠',
-  quiz_deadline: '⏳',
-  course_new: '📚',
-  material_new: '📄',
-  announcement: '📢',
-  important_announcement: '🚨',
-  trainer_message: '💬',
-  project_update: '🛠️',
-};
-
 function resolveNotificationRoute(data) {
   const resolver = data?.type && ROUTES[data.type];
   if (!resolver && data?.dailyChallengeId) return DAILY_CHALLENGE_ROUTE();

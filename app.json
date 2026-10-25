@@ -59,7 +59,8 @@
           "faceIDPermission": "Allow C3 Institute to use Face ID to unlock the app."
         }
       ],
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store"
     ],
     "runtimeVersion": "1.0.1",
     "updates": {

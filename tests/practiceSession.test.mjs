@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hasPracticed, mergePage, pageStartFor, questionCountLabel } from '../src/utils/practiceSession.js';
+import { canCheckAnswer, checkPracticeAnswer, hasPracticed, mergePage, pageStartFor, questionCountLabel } from '../src/utils/practiceSession.js';
 
 test('pageStartFor gives the first question of the page that holds an index', () => {
   assert.equal(pageStartFor(0), 0);
@@ -36,4 +36,36 @@ test('questionCountLabel shows the size of a lesson and the student progress thr
   assert.equal(questionCountLabel({ questionCount: 30, practicedCount: 12 }), '12 of 30 practised');
   assert.equal(questionCountLabel({ questionCount: 30, practicedCount: 30 }), 'All 30 practised');
   assert.equal(questionCountLabel({ questionCount: 5, practicedCount: 9 }), 'All 5 practised');
+});
+
+const single = { answerType: 'single', options: ['a', 'b', 'c'], correctAnswer: 1 };
+const multiple = { answerType: 'multiple', options: ['a', 'b', 'c'], correctOptionIndexes: [0, 2] };
+const numerical = { answerType: 'numerical', numericalAnswer: '12.5' };
+
+test('checkPracticeAnswer marks a single choice right or wrong, and not answered when nothing is chosen', () => {
+  assert.deepEqual(checkPracticeAnswer(single, { selected: [1] }), { answered: true, correct: true });
+  assert.deepEqual(checkPracticeAnswer(single, { selected: [2] }), { answered: true, correct: false });
+  assert.deepEqual(checkPracticeAnswer(single, { selected: [] }), { answered: false, correct: false });
+});
+
+test('checkPracticeAnswer needs every right option and no others for a multiple choice', () => {
+  assert.equal(checkPracticeAnswer(multiple, { selected: [2, 0] }).correct, true);
+  assert.equal(checkPracticeAnswer(multiple, { selected: [0] }).correct, false);
+  assert.equal(checkPracticeAnswer(multiple, { selected: [0, 1, 2] }).correct, false);
+  assert.equal(checkPracticeAnswer(multiple, { selected: [] }).answered, false);
+});
+
+test('checkPracticeAnswer compares numbers by value and ignores spaces', () => {
+  assert.equal(checkPracticeAnswer(numerical, { numerical: ' 12.50 ' }).correct, true);
+  assert.equal(checkPracticeAnswer(numerical, { numerical: '12' }).correct, false);
+  assert.deepEqual(checkPracticeAnswer(numerical, { numerical: '  ' }), { answered: false, correct: false });
+});
+
+test('canCheckAnswer is false for a question that has no answer to check against', () => {
+  assert.equal(canCheckAnswer(single), true);
+  assert.equal(canCheckAnswer(multiple), true);
+  assert.equal(canCheckAnswer(numerical), true);
+  assert.equal(canCheckAnswer({ answerType: 'single', options: ['a', 'b'] }), false);
+  assert.equal(canCheckAnswer({ answerType: 'multiple', options: ['a'], correctOptionIndexes: [] }), false);
+  assert.equal(canCheckAnswer({ answerType: 'numerical', numericalAnswer: '' }), false);
 });

@@ -115,7 +115,7 @@ function getNumericalAnswer(question) {
   return correctAnswer == null ? '' : String(correctAnswer).trim();
 }
 
-export function isNumericalAnswerCorrect(submitted, correct) {
+function isNumericalAnswerCorrect(submitted, correct) {
   const a = String(submitted ?? '').trim();
   const b = String(correct ?? '').trim();
   if (!a || !b) return false;

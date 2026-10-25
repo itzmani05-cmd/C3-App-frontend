@@ -1,492 +1,373 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, View, TouchableOpacity } from 'react-native';
+import { Modal, Pressable, ScrollView, TouchableOpacity, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from '../../icons';
 import AppText from '../ui/AppText';
-import { COLORS, RADII, SHADOWS } from '../../theme';
+import { haptics } from '../../utils/haptics';
+import { INITIAL_STATE, press, prettyExpression } from '../../utils/calculator';
 
-function factorial(n) {
-  if (n < 0 || !Number.isFinite(n) || Math.floor(n) !== n) return NaN;
-  if (n > 170) return Infinity;
-  let r = 1;
-  for (let i = 2; i <= n; i++) r *= i;
-  return r;
+// A scientific calculator laid out like the GATE virtual calculator: a blue title bar, two white display lines (what was
+// typed, and the number or answer), scientific keys on the left and the number pad on the right. On a phone the two
+// halves are stacked instead of side by side, so every key stays big enough to tap.
+
+const WIDE_BREAKPOINT = 600;
+const GAP = 4;
+
+const PALETTE = {
+  title: '#4285F4',
+  helpButton: 'rgba(255,255,255,0.28)',
+  body: '#D9D9D9',
+  bodyEdge: '#9B9B9B',
+  displayBorder: '#BDBDBD',
+  text: '#222222',
+  radio: '#1E88E5',
+};
+
+const KEY_TONES = {
+  plain: { background: '#F4F4F4', border: '#C9C9C9', edge: '#A8A8A8', text: '#2B2B2B' },
+  quiet: { background: '#EDEDED', border: '#D0D0D0', edge: '#BDBDBD', text: '#6B6B6B' },
+  red: { background: '#E74C3C', border: '#D9453A', edge: '#B93A2E', text: '#FFFFFF' },
+  green: { background: '#2ECC71', border: '#2BBF69', edge: '#239B56', text: '#FFFFFF' },
+};
+
+// [key, label, spoken name]. Labels use ^{...} for a raised character and _{...} for a lowered one.
+const MEMORY_KEYS = [
+  ['MC', 'MC', 'Memory clear'],
+  ['MR', 'MR', 'Memory recall'],
+  ['MS', 'MS', 'Memory store'],
+  ['M+', 'M+', 'Memory add'],
+  ['M-', 'M-', 'Memory subtract'],
+];
+
+const SCIENTIFIC_ROWS = [
+  [
+    ['sinh', 'sinh', 'Hyperbolic sine'],
+    ['cosh', 'cosh', 'Hyperbolic cosine'],
+    ['tanh', 'tanh', 'Hyperbolic tangent'],
+    ['E', 'Exp', 'Exp, times ten to the power'],
+    ['(', '(', 'Open bracket'],
+    [')', ')', 'Close bracket'],
+  ],
+  [
+    ['asinh', 'sinh^{-1}', 'Inverse hyperbolic sine'],
+    ['acosh', 'cosh^{-1}', 'Inverse hyperbolic cosine'],
+    ['atanh', 'tanh^{-1}', 'Inverse hyperbolic tangent'],
+    ['log2', 'log_{2}x', 'Log base 2'],
+    ['ln', 'ln', 'Natural log'],
+    ['log', 'log', 'Log base 10'],
+  ],
+  [
+    ['pi', 'π', 'Pi'],
+    ['e', 'e', 'Euler number'],
+    ['fact', 'n!', 'Factorial'],
+    ['logb', 'log_{y}x', 'Log base y of x'],
+    ['ex', 'e^{x}', 'e to the power x'],
+    ['tenx', '10^{x}', 'Ten to the power x'],
+  ],
+  [
+    ['sin', 'sin', 'Sine'],
+    ['cos', 'cos', 'Cosine'],
+    ['tan', 'tan', 'Tangent'],
+    ['^', 'x^{y}', 'x to the power y'],
+    ['cube', 'x^{3}', 'x cubed'],
+    ['sq', 'x^{2}', 'x squared'],
+  ],
+  [
+    ['asin', 'sin^{-1}', 'Inverse sine'],
+    ['acos', 'cos^{-1}', 'Inverse cosine'],
+    ['atan', 'tan^{-1}', 'Inverse tangent'],
+    ['rt', '^{y}√x', 'y-th root of x'],
+    ['cbrt', '^{3}√', 'Cube root'],
+    ['abs', '|x|', 'Absolute value'],
+  ],
+];
+
+const HELP_LINES = [
+  'Type an expression with the keys, then press = to see the answer. Brackets and the order of operations work as usual.',
+  'Keys such as sin, ln, √ and x² apply to the number or bracket just before them. With nothing before them, they open a bracket.',
+  'ʸ√x and logᵧx take two numbers: type y, press the key, then type x. For example 3 ʸ√x 27 = 3 and 2 logᵧx 8 = 3.',
+  'Exp enters a power of ten: 1.5 Exp 3 = 1500.',
+  'MS stores the number on screen, MR puts it back, M+ and M- add to or subtract from it, and MC clears it.',
+];
+
+// A label with raised and lowered characters, drawn from separate pieces so it looks the same in every font.
+function KeyLabel({ text, color, size }) {
+  const parts = text.split(/(\^\{[^}]*\}|_\{[^}]*\})/).filter(Boolean);
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      {parts.map((part, index) => {
+        const raised = part.startsWith('^{');
+        const lowered = part.startsWith('_{');
+        return (
+          <AppText
+            key={index}
+            variant="medium"
+            style={{
+              color,
+              fontSize: raised || lowered ? size * 0.68 : size,
+              top: raised ? -size * 0.3 : lowered ? size * 0.28 : 0,
+              includeFontPadding: false,
+            }}
+          >
+            {raised || lowered ? part.slice(2, -1) : part}
+          </AppText>
+        );
+      })}
+    </View>
+  );
 }
 
-function fmt(n) {
-  if (!Number.isFinite(n)) return n === Infinity ? 'Infinity' : Number.isNaN(n) ? 'Error' : '-Infinity';
-  if (Number.isInteger(n) && Math.abs(n) < 1e15) return n.toString();
-  let s = n.toPrecision(15);
-  if (s.indexOf('e') === -1 && s.indexOf('.') !== -1) s = s.replace(/0+$/, '').replace(/\.$/, '');
-  return s;
+function CalcKey({ label, name, onPress, tone = 'plain', flex = 1, height, size }) {
+  const colors = KEY_TONES[tone];
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        haptics.tap();
+        onPress();
+      }}
+      activeOpacity={0.6}
+      accessibilityRole="button"
+      accessibilityLabel={name || label}
+      style={{
+        flex,
+        height,
+        minWidth: 0,
+        borderRadius: 4,
+        backgroundColor: colors.background,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderBottomWidth: 3,
+        borderBottomColor: colors.edge,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <KeyLabel text={label} color={colors.text} size={size} />
+    </TouchableOpacity>
+  );
 }
 
-const BINARY_SYMBOLS = { '+': '+', '-': '−', '*': '×', '/': '÷', mod: 'mod', '^': 'xʸ' };
+function Row({ children }) {
+  return <View style={{ flexDirection: 'row', gap: GAP }}>{children}</View>;
+}
+
+function Display({ text, size, height, flag }) {
+  return (
+    <View
+      style={{
+        height,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        borderRadius: 3,
+        borderWidth: 1,
+        borderColor: PALETTE.displayBorder,
+        backgroundColor: '#FFFFFF',
+      }}
+    >
+      {flag ? (
+        <AppText variant="bold" style={{ fontSize: 11, color: PALETTE.radio }}>
+          {flag}
+        </AppText>
+      ) : null}
+      <AppText numberOfLines={1} ellipsizeMode="head" adjustsFontSizeToFit style={{ flex: 1, textAlign: 'right', fontSize: size, color: PALETTE.text }}>
+        {text || ' '}
+      </AppText>
+    </View>
+  );
+}
+
+function AngleModeSwitch({ mode, onChange }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 10 }} accessibilityRole="radiogroup">
+      {[
+        ['deg', 'Deg'],
+        ['rad', 'Rad'],
+      ].map(([value, label]) => (
+        <TouchableOpacity
+          key={value}
+          onPress={() => onChange(value)}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+          accessibilityRole="radio"
+          accessibilityLabel={label === 'Deg' ? 'Degrees' : 'Radians'}
+          accessibilityState={{ selected: mode === value }}
+          style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10 }}
+        >
+          <View style={{ width: 17, height: 17, borderRadius: 9, borderWidth: 2, borderColor: mode === value ? PALETTE.radio : '#8A8A8A', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
+            {mode === value ? <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: PALETTE.radio }} /> : null}
+          </View>
+          <AppText style={{ marginLeft: 4, fontSize: 13, color: PALETTE.text }}>{label}</AppText>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+function TitleBar({ collapsed, helpOpen, onToggleHelp, onToggleCollapsed, onClose }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: PALETTE.title, paddingLeft: 14, paddingRight: 10, height: 50 }}>
+      <AppText numberOfLines={1} style={{ flex: 1, fontSize: 17, color: '#FFFFFF' }}>
+        Scientific Calculator
+      </AppText>
+      <TouchableOpacity
+        onPress={onToggleHelp}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={helpOpen ? 'Hide help' : 'Show help'}
+        style={{ backgroundColor: PALETTE.helpButton, borderRadius: 3, paddingHorizontal: 12, paddingVertical: 6, marginRight: 10 }}
+      >
+        <AppText variant="bold" style={{ fontSize: 13, color: '#FFFFFF' }}>
+          Help
+        </AppText>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={onToggleCollapsed}
+        activeOpacity={0.7}
+        hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+        accessibilityRole="button"
+        accessibilityLabel={collapsed ? 'Expand calculator' : 'Minimise calculator'}
+        style={{ width: 30, height: 30, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <View style={{ width: 16, height: 3, backgroundColor: '#FFFFFF', marginTop: collapsed ? 0 : 8 }} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={onClose}
+        activeOpacity={0.7}
+        hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+        accessibilityRole="button"
+        accessibilityLabel="Close calculator"
+        style={{ width: 30, height: 30, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <X size={22} color="#FFFFFF" strokeWidth={2.5} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function HelpCard() {
+  return (
+    <View style={{ backgroundColor: '#FFFFFF', borderRadius: 3, borderWidth: 1, borderColor: PALETTE.displayBorder, padding: 10, marginBottom: 8, gap: 6 }}>
+      {HELP_LINES.map((line) => (
+        <AppText key={line} style={{ fontSize: 12.5, lineHeight: 18, color: PALETTE.text }}>
+          {line}
+        </AppText>
+      ))}
+    </View>
+  );
+}
 
 export default function ScientificCalculator({ visible, onClose }) {
-  const [current, setCurrent] = useState('0');
-  const [expression, setExpression] = useState('');
-  const [typingCurrent, setTypingCurrent] = useState(false);
-  const [result, setResult] = useState('0');
-  const [memory, setMemory] = useState(0);
-  const [justEvaluated, setJustEvaluated] = useState(false);
-  const [angleMode, setAngleMode] = useState('deg');
-  const [pendingOp, setPendingOp] = useState(null);
-  const [pendingVal, setPendingVal] = useState(null);
-
-  const toRad = (x) => (angleMode === 'deg' ? (x * Math.PI) / 180 : x);
-  const fromRad = (x) => (angleMode === 'deg' ? (x * 180) / Math.PI : x);
-
-  const topLine = justEvaluated ? expression : expression ? (typingCurrent ? `${expression} ${current}` : expression) : current;
-
-  const clearAll = () => {
-    setCurrent('0');
-    setExpression('');
-    setTypingCurrent(false);
-    setResult('0');
-    setPendingOp(null);
-    setPendingVal(null);
-    setJustEvaluated(false);
-  };
-
-  const backspace = () => {
-    if (justEvaluated) return;
-    setCurrent((c) => (c.length > 1 ? c.slice(0, -1) : '0'));
-  };
-
-  const appendDigit = (d) => {
-    let base = current;
-    let expr = expression;
-    if (justEvaluated) {
-      base = '0';
-      expr = '';
-      setExpression('');
-      setJustEvaluated(false);
-    }
-    if (d === '.') {
-      if (base.includes('.')) return;
-      base = base === '0' ? '0.' : base + '.';
-    } else {
-      base = base === '0' ? d : base + d;
-    }
-    setCurrent(base);
-    if (expr !== expression) setExpression(expr);
-    setTypingCurrent(true);
-  };
-
-  const applyConst = (value) => {
-    if (justEvaluated) {
-      setExpression('');
-      setJustEvaluated(false);
-    }
-    setCurrent(fmt(value));
-    setTypingCurrent(true);
-  };
-
-  const performOp = (op, a, b) => {
-    switch (op) {
-      case '+':
-        return a + b;
-      case '-':
-        return a - b;
-      case '*':
-        return a * b;
-      case '/':
-        return a / b;
-      case 'mod':
-        return a % b;
-      case '^':
-        return Math.pow(a, b);
-      default:
-        return b;
-    }
-  };
-
-  const compute = () => {
-    if (pendingOp === null || pendingVal === null) return;
-    const b = parseFloat(current);
-    const out = performOp(pendingOp, pendingVal, b);
-    setExpression((expr) => `${expr} ${current} =`);
-    setResult(fmt(out));
-    setCurrent(fmt(out));
-    setTypingCurrent(false);
-    setPendingOp(null);
-    setPendingVal(null);
-    setJustEvaluated(true);
-  };
-
-  const startBinary = (op) => {
-    const val = parseFloat(current);
-    if (Number.isNaN(val)) return;
-    let base = val;
-    if (pendingOp && !justEvaluated) {
-      base = performOp(pendingOp, pendingVal, val);
-      setResult(fmt(base));
-    }
-    setPendingVal(base);
-    setPendingOp(op);
-    setExpression(`${fmt(base)} ${BINARY_SYMBOLS[op] || op}`);
-    setJustEvaluated(false);
-    setCurrent('0');
-    setTypingCurrent(false);
-  };
-
-  const applyUnary = (fn) => {
-    const val = parseFloat(current);
-    if (Number.isNaN(val)) return;
-    let out;
-    let label = '';
-    switch (fn) {
-      case 'sin':
-        out = Math.sin(toRad(val));
-        label = `sin(${current})`;
-        break;
-      case 'cos':
-        out = Math.cos(toRad(val));
-        label = `cos(${current})`;
-        break;
-      case 'tan':
-        out = Math.tan(toRad(val));
-        label = `tan(${current})`;
-        break;
-      case 'asin':
-        out = fromRad(Math.asin(val));
-        label = `sin⁻¹(${current})`;
-        break;
-      case 'acos':
-        out = fromRad(Math.acos(val));
-        label = `cos⁻¹(${current})`;
-        break;
-      case 'atan':
-        out = fromRad(Math.atan(val));
-        label = `tan⁻¹(${current})`;
-        break;
-      case 'ln':
-        out = Math.log(val);
-        label = `ln(${current})`;
-        break;
-      case 'log10':
-        out = Math.log10(val);
-        label = `log(${current})`;
-        break;
-      case 'exp':
-        out = Math.exp(val);
-        label = `e^(${current})`;
-        break;
-      case 'sqrt':
-        out = Math.sqrt(val);
-        label = `√(${current})`;
-        break;
-      case 'cbrt':
-        out = Math.cbrt(val);
-        label = `∛(${current})`;
-        break;
-      case 'square':
-        out = val * val;
-        label = `(${current})²`;
-        break;
-      case 'cube':
-        out = val * val * val;
-        label = `(${current})³`;
-        break;
-      case 'inv':
-        out = 1 / val;
-        label = `1/(${current})`;
-        break;
-      case 'abs':
-        out = Math.abs(val);
-        label = `|${current}|`;
-        break;
-      case 'fact':
-        out = factorial(val);
-        label = `(${current})!`;
-        break;
-      case 'negate':
-        setCurrent(fmt(-val));
-        return;
-      default:
-        return;
-    }
-    setExpression(label + ' =');
-    setResult(fmt(out));
-    setCurrent(fmt(out));
-    setTypingCurrent(false);
-    setJustEvaluated(true);
-  };
-
-  const memAction = (a) => {
-    const val = parseFloat(current);
-    switch (a) {
-      case 'MC':
-        setMemory(0);
-        break;
-      case 'MR':
-        setExpression('MR =');
-        setResult(fmt(memory));
-        setCurrent(fmt(memory));
-        setTypingCurrent(false);
-        setJustEvaluated(true);
-        break;
-      case 'MS':
-        setMemory(val);
-        break;
-      case 'M+':
-        setMemory((m) => m + val);
-        break;
-      case 'M-':
-        setMemory((m) => m - val);
-        break;
-    }
-  };
+  const [state, setState] = useState(INITIAL_STATE);
+  const [collapsed, setCollapsed] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   if (!visible) return null;
 
+  const wide = width >= WIDE_BREAKPOINT;
+  const panelWidth = Math.min(width - 16, wide ? 620 : 420);
+  const keyHeight = wide ? 36 : 38;
+  const labelSize = wide ? 13 : 14;
+  const digitSize = wide ? 17 : 18;
+  const topOffset = insets.top + 48;
+  const bodyMaxHeight = Math.max(240, height - topOffset - insets.bottom - 50 - 24);
+
+  const send = (key) => () => setState((current) => press(current, key));
+  const key = ([id, label, name], options = {}) => (
+    <CalcKey key={id} label={label} name={name} onPress={send(id)} height={keyHeight} size={labelSize} {...options} />
+  );
+  const digit = (value) => key([value, value, undefined], { size: digitSize });
+
   return (
-    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
-      <Pressable
-        style={{ flex: 1, backgroundColor: 'rgba(15,23,42,0.35)', alignItems: 'flex-end', paddingTop: 100, paddingRight: 16 }}
-        onPress={onClose}
-      >
+    <Modal transparent visible animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+      <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', alignItems: 'center', paddingTop: topOffset }} onPress={onClose}>
         <Pressable
           onPress={() => {}}
           style={{
-            width: 300,
-            maxWidth: '92%',
-            borderRadius: RADII.xxl,
+            width: panelWidth,
+            borderRadius: 6,
             overflow: 'hidden',
-            backgroundColor: COLORS.white,
-            borderWidth: 1,
-            borderColor: COLORS.slate200,
-            ...SHADOWS.lg,
+            backgroundColor: PALETTE.body,
+            borderBottomWidth: 9,
+            borderBottomColor: PALETTE.bodyEdge,
           }}
         >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 14,
-              paddingVertical: 10,
-              backgroundColor: COLORS.slate50,
-              borderBottomWidth: 1,
-              borderBottomColor: COLORS.slate100,
-            }}
-          >
-            <AppText variant="bold" style={{ fontSize: 11, letterSpacing: 0.4, color: COLORS.slate500 }}>
-              CALCULATOR
-            </AppText>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={{ flexDirection: 'row', borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: COLORS.slate200 }}>
-                {['deg', 'rad'].map((mode) => (
-                  <TouchableOpacity
-                    key={mode}
-                    onPress={() => setAngleMode(mode)}
-                    activeOpacity={0.7}
-                    style={{
-                      paddingHorizontal: 8,
-                      paddingVertical: 5,
-                      backgroundColor: angleMode === mode ? COLORS.brand600 : COLORS.white,
-                    }}
-                  >
-                    <AppText variant="bold" style={{ fontSize: 10, color: angleMode === mode ? COLORS.white : COLORS.slate500 }}>
-                      {mode.toUpperCase()}
-                    </AppText>
-                  </TouchableOpacity>
-                ))}
+          <TitleBar
+            collapsed={collapsed}
+            helpOpen={helpOpen}
+            onToggleHelp={() => setHelpOpen((open) => !open)}
+            onToggleCollapsed={() => setCollapsed((value) => !value)}
+            onClose={onClose}
+          />
+
+          {collapsed ? null : (
+            <ScrollView style={{ maxHeight: bodyMaxHeight }} contentContainerStyle={{ padding: 10 }} bounces={false} showsVerticalScrollIndicator={false}>
+              {helpOpen ? <HelpCard /> : null}
+
+              <View style={{ gap: 8 }}>
+                <Display text={prettyExpression(state.expression)} size={wide ? 24 : 22} height={44} />
+                <Display text={state.result} size={wide ? 26 : 24} height={46} flag={state.memory !== 0 ? 'M' : null} />
               </View>
-              <TouchableOpacity onPress={onClose} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Close calculator" style={{ padding: 4 }}>
-                <X size={16} color={COLORS.slate400} />
-              </TouchableOpacity>
-            </View>
-          </View>
 
-          <View style={{ backgroundColor: COLORS.ink900, paddingHorizontal: 14, paddingVertical: 12, gap: 4 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <AppText numberOfLines={1} style={{ flex: 1, textAlign: 'right', fontSize: 11, color: COLORS.slate400 }}>
-                {topLine || ' '}
-              </AppText>
-              {memory !== 0 ? (
-                <View style={{ borderWidth: 1, borderColor: COLORS.slate600, borderRadius: 4, paddingHorizontal: 4, marginLeft: 6 }}>
-                  <AppText variant="bold" style={{ fontSize: 10, color: COLORS.brand500 }}>M</AppText>
+              <View style={{ flexDirection: wide ? 'row' : 'column', gap: wide ? 10 : 8, marginTop: 10 }}>
+                <View style={{ flex: wide ? 6 : undefined, gap: GAP }}>
+                  <Row>
+                    {key(['mod', 'mod', 'Modulo'])}
+                    <View style={{ flex: 5, justifyContent: 'center' }}>
+                      <AngleModeSwitch mode={state.angleMode} onChange={(mode) => setState((current) => press(current, mode))} />
+                    </View>
+                  </Row>
+                  {SCIENTIFIC_ROWS.map((row, index) => (
+                    <Row key={index}>{row.map((spec) => key(spec))}</Row>
+                  ))}
                 </View>
-              ) : null}
-            </View>
-            <AppText numberOfLines={1} variant="extraBold" style={{ textAlign: 'right', fontSize: 26, color: COLORS.white }}>
-              {result}
-            </AppText>
-          </View>
 
-          <View style={{ padding: 10, gap: 6 }}>
-            <CalcRow>
-              {memKey('MC', () => memAction('MC'))}
-              {memKey('MR', () => memAction('MR'))}
-              {memKey('MS', () => memAction('MS'))}
-              {memKey('M+', () => memAction('M+'))}
-              {memKey('M-', () => memAction('M-'))}
-            </CalcRow>
-
-            <CalcRow>
-              {fnKey('sin', () => applyUnary('sin'))}
-              {fnKey('cos', () => applyUnary('cos'))}
-              {fnKey('tan', () => applyUnary('tan'))}
-              {fnKey('x²', () => applyUnary('square'))}
-              {fnKey('√', () => applyUnary('sqrt'))}
-            </CalcRow>
-            <CalcRow>
-              {fnKey('sin⁻¹', () => applyUnary('asin'))}
-              {fnKey('cos⁻¹', () => applyUnary('acos'))}
-              {fnKey('tan⁻¹', () => applyUnary('atan'))}
-              {fnKey('x³', () => applyUnary('cube'))}
-              {fnKey('xʸ', () => startBinary('^'))}
-            </CalcRow>
-            <CalcRow>
-              {fnKey('ln', () => applyUnary('ln'))}
-              {fnKey('log', () => applyUnary('log10'))}
-              {fnKey('n!', () => applyUnary('fact'))}
-              {fnKey('eˣ', () => applyUnary('exp'))}
-              {fnKey('1/x', () => applyUnary('inv'))}
-            </CalcRow>
-            <CalcRow>
-              {fnKey('π', () => applyConst(Math.PI))}
-              {fnKey('e', () => applyConst(Math.E))}
-              {fnKey('mod', () => startBinary('mod'))}
-              {fnKey('∛', () => applyUnary('cbrt'))}
-              {fnKey('|x|', () => applyUnary('abs'))}
-            </CalcRow>
-
-            <CalcRow>
-              {numKey('7', () => appendDigit('7'))}
-              {numKey('8', () => appendDigit('8'))}
-              {numKey('9', () => appendDigit('9'))}
-              {opKey('÷', () => startBinary('/'))}
-              {opKey('C', clearAll)}
-            </CalcRow>
-            <CalcRow>
-              {numKey('4', () => appendDigit('4'))}
-              {numKey('5', () => appendDigit('5'))}
-              {numKey('6', () => appendDigit('6'))}
-              {opKey('×', () => startBinary('*'))}
-              {opKey('←', backspace)}
-            </CalcRow>
-            <CalcRow>
-              {numKey('1', () => appendDigit('1'))}
-              {numKey('2', () => appendDigit('2'))}
-              {numKey('3', () => appendDigit('3'))}
-              {opKey('−', () => startBinary('-'))}
-              {fnKey('+/-', () => applyUnary('negate'))}
-            </CalcRow>
-            <View style={{ flexDirection: 'row', gap: 6 }}>
-              {numKey('0', () => appendDigit('0'))}
-              {numKey('.', () => appendDigit('.'))}
-              {opKey('+', () => startBinary('+'))}
-              <TouchableOpacity
-                onPress={compute}
-                activeOpacity={0.85}
-                style={{
-                  flexBasis: '38%',
-                  flexGrow: 1,
-                  borderRadius: RADII.xl,
-                  backgroundColor: COLORS.brand600,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 10,
-                }}
-              >
-                <AppText variant="bold" style={{ color: COLORS.white, fontSize: 15 }}>=</AppText>
-              </TouchableOpacity>
-            </View>
-          </View>
+                <View style={{ flex: wide ? 5 : undefined, gap: GAP }}>
+                  <Row>{MEMORY_KEYS.map((spec) => key(spec, { size: labelSize - 1 }))}</Row>
+                  <Row>
+                    {key(['back', '←', 'Backspace'], { flex: 2, tone: 'red', size: digitSize + 2 })}
+                    {key(['clear', 'C', 'Clear'], { tone: 'red', size: digitSize })}
+                    {key(['neg', '+/-', 'Plus or minus'], { tone: 'red' })}
+                    {key(['sqrt', '√', 'Square root'], { tone: 'quiet', size: digitSize })}
+                  </Row>
+                  <Row>
+                    {digit('7')}
+                    {digit('8')}
+                    {digit('9')}
+                    {key(['/', '/', 'Divide'], { size: digitSize })}
+                    {key(['pct', '%', 'Percent'], { size: digitSize })}
+                  </Row>
+                  <Row>
+                    {digit('4')}
+                    {digit('5')}
+                    {digit('6')}
+                    {key(['*', '*', 'Multiply'], { size: digitSize })}
+                    {key(['inv', '1/x', 'One over x'])}
+                  </Row>
+                  <View style={{ flexDirection: 'row', gap: GAP }}>
+                    <View style={{ flex: 4, gap: GAP }}>
+                      <Row>
+                        {digit('1')}
+                        {digit('2')}
+                        {digit('3')}
+                        {key(['-', '−', 'Minus'], { size: digitSize })}
+                      </Row>
+                      <Row>
+                        {key(['0', '0', undefined], { flex: 2, size: digitSize })}
+                        {key(['.', '.', 'Decimal point'], { size: digitSize })}
+                        {key(['+', '+', 'Plus'], { size: digitSize })}
+                      </Row>
+                    </View>
+                    <View style={{ flex: 1 }}>{key(['eq', '=', 'Equals'], { tone: 'green', height: undefined, size: digitSize + 4 })}</View>
+                  </View>
+                </View>
+              </View>
+            </ScrollView>
+          )}
         </Pressable>
       </Pressable>
     </Modal>
-  );
-}
-
-function CalcRow({ children }) {
-  return <View style={{ flexDirection: 'row', gap: 6 }}>{children}</View>;
-}
-
-function numKey(label, onPress) {
-  return (
-    <TouchableOpacity
-      key={label}
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={{
-        flexBasis: '18%',
-        flexGrow: 1,
-        borderRadius: RADII.xl,
-        backgroundColor: COLORS.slate100,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10,
-      }}
-    >
-      <AppText variant="bold" style={{ fontSize: 14, color: COLORS.slate800 }}>{label}</AppText>
-    </TouchableOpacity>
-  );
-}
-
-function opKey(label, onPress) {
-  return (
-    <TouchableOpacity
-      key={label}
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={{
-        flexBasis: '18%',
-        flexGrow: 1,
-        borderRadius: RADII.xl,
-        backgroundColor: COLORS.brand50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 10,
-      }}
-    >
-      <AppText variant="bold" style={{ fontSize: 14, color: COLORS.brand700 }}>{label}</AppText>
-    </TouchableOpacity>
-  );
-}
-
-function fnKey(label, onPress) {
-  return (
-    <TouchableOpacity
-      key={label}
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={{
-        flexBasis: '18%',
-        flexGrow: 1,
-        borderRadius: RADII.xl,
-        backgroundColor: COLORS.white,
-        borderWidth: 1,
-        borderColor: COLORS.slate200,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 8,
-      }}
-    >
-      <AppText variant="bold" style={{ fontSize: 10.5, color: COLORS.slate600 }}>{label}</AppText>
-    </TouchableOpacity>
-  );
-}
-
-function memKey(label, onPress) {
-  return (
-    <TouchableOpacity
-      key={label}
-      onPress={onPress}
-      activeOpacity={0.75}
-      style={{
-        flexBasis: '18%',
-        flexGrow: 1,
-        borderRadius: RADII.xl,
-        backgroundColor: COLORS.slate800,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 7,
-      }}
-    >
-      <AppText variant="bold" style={{ fontSize: 9.5, color: COLORS.slate200, letterSpacing: 0.3 }}>{label}</AppText>
-    </TouchableOpacity>
   );
 }

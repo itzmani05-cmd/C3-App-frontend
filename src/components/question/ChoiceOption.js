@@ -8,7 +8,7 @@ import BilingualText from '../ui/BilingualText';
 import QuestionImage from './QuestionImage';
 import { COLORS } from '../../theme';
 
-// Both palettes share one look now (rounded rows, a lettered badge, brand-blue selection, green for correct);
+// Both palettes share one look now (rounded rows, a lettered badge, brand-blue selection, green for correct, red for wrong);
 // they differ only in the spacing the old screens expect.
 const PALETTES = {
   brand: { row: { marginTop: 10 } },
@@ -17,7 +17,8 @@ const PALETTES = {
 
 export const optionLetter = (index) => String.fromCharCode(65 + index);
 
-function stateColors({ selected, correct }) {
+function stateColors({ selected, correct, incorrect }) {
+  if (incorrect) return { border: COLORS.red300, background: COLORS.red50, badge: COLORS.red600, badgeText: COLORS.white, text: COLORS.slate900 };
   if (correct) return { border: COLORS.green300, background: COLORS.green50, badge: COLORS.green600, badgeText: COLORS.white, text: COLORS.slate900 };
   if (selected) return { border: COLORS.brand600, background: COLORS.brand50, badge: COLORS.brand600, badgeText: COLORS.white, text: COLORS.slate900 };
   return { border: COLORS.slate200, background: COLORS.white, badge: COLORS.slate100, badgeText: COLORS.slate600, text: COLORS.slate700 };
@@ -53,14 +54,15 @@ export default function ChoiceOption({
   multiple = false,
   selected = false,
   correct = false,
+  incorrect = false,
   dimmed = false,
   showLetter = false,
   palette = 'brand',
   disabled = false,
   onPress,
 }) {
-  const colors = stateColors({ selected, correct });
-  const active = selected || correct;
+  const colors = stateColors({ selected, correct, incorrect });
+  const active = selected || correct || incorrect;
 
   return (
     <PressableScale

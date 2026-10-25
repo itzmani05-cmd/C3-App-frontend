@@ -5,6 +5,7 @@ import TabNavigation from './TabNavigation';
 import TopicsScreen from '../screens/TopicsScreen';
 import QuestionsScreen from '../screens/QuestionsScreen';
 import PracticeScreen from '../screens/PracticeScreen';
+import BookmarksScreen from '../screens/BookmarksScreen';
 import ResultScreen from '../screens/ResultScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import DailyChallengeScreen from '../screens/DailyChallengeScreen';
@@ -23,6 +24,7 @@ const SCREENS = {
   TopicsScreen,
   QuestionsScreen,
   PracticeScreen,
+  BookmarksScreen,
   ResultScreen,
   NotificationsScreen,
   DailyChallengeScreen,

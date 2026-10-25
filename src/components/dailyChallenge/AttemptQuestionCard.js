@@ -5,6 +5,7 @@ import FormattedQuestionText from '../quiz/FormattedQuestionText';
 import Card from '../ui/Card';
 import ProgressBar from '../ui/ProgressBar';
 import QuestionImage from '../question/QuestionImage';
+import ReportQuestionButton from '../question/ReportQuestionButton';
 import ChoiceOption, { MultiSelectHint } from '../question/ChoiceOption';
 import NumericalAnswerInput from '../question/NumericalAnswerInput';
 import { COLORS, tw } from '../../theme';
@@ -44,6 +45,7 @@ export default function AttemptQuestionCard({ question, index, total, ...handler
         <AppText variant="bold" style={tw`text-[13px] text-brand-700`}>
           Question {index + 1} of {total}
         </AppText>
+        <ReportQuestionButton questionId={question.questionId} number={index + 1} source="daily" context="Daily Challenge" />
       </View>
       <ProgressBar value={((index + 1) / total) * 100} height={4} color={COLORS.brand600} style={tw`mt-2 mb-3`} />
       <FormattedQuestionText text={question.questionText} color={COLORS.slate700} />

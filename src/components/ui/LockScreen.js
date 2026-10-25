@@ -3,7 +3,7 @@ import { BackHandler, Image, StyleSheet, TouchableOpacity, View } from 'react-na
 import AppText from './AppText';
 import AppButton from './AppButton';
 import { authenticateWithBiometrics } from '../../utils/biometricLock';
-import { COLORS, tw } from '../../theme';
+import { tw } from '../../theme';
 
 const LOGO = require('../../../assets/C3AppLogo.png');
 

@@ -1,3 +1,5 @@
+import { evaluateAnswer, getCorrectOptionIndex } from './questionFormat.js';
+
 // Helpers for the Practice screen, which loads a lesson's questions a page at a time and remembers where the student is.
 
 export const PRACTICE_PAGE_SIZE = 25;
@@ -30,4 +32,23 @@ export function questionCountLabel(lesson) {
   const practiced = Math.min(Number(lesson?.practicedCount) || 0, total);
   if (practiced === 0) return `${total} ${total === 1 ? 'question' : 'questions'}`;
   return practiced >= total ? `All ${total} practised` : `${practiced} of ${total} practised`;
+}
+
+// A practice card's state in the shape the quiz scoring expects.
+function toAnswer(question, state) {
+  if (question.answerType === 'multiple') return { selectedOptionIndexes: state.selected };
+  if (question.answerType === 'numerical') return { selectedNumericalAnswer: state.numerical };
+  return { selectedOptionIndex: state.selected[0] };
+}
+
+// Whether the question carries an answer to check against. Without one, Submit would call every attempt wrong.
+export function canCheckAnswer(question) {
+  if (question.answerType === 'multiple') return (question.correctOptionIndexes || []).length > 0;
+  if (question.answerType === 'numerical') return String(question.numericalAnswer ?? '').trim() !== '';
+  return getCorrectOptionIndex(question) >= 0;
+}
+
+// What Submit tells the student: whether they answered, and whether the answer is right.
+export function checkPracticeAnswer(question, state) {
+  return evaluateAnswer(question, toAnswer(question, state), getCorrectOptionIndex(question));
 }

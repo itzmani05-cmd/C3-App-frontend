@@ -307,7 +307,13 @@ export default function QuestionsScreen({ route, navigation }) {
                 </PressableScale>
               </View>
 
-              <QuizQuestionCard question={currentQuestion} index={current} answer={answerById[currentQuestion._id]} {...handlers} />
+              <QuizQuestionCard
+                question={currentQuestion}
+                index={current}
+                answer={answerById[currentQuestion._id]}
+                reportContext={subtopicName || topicName}
+                {...handlers}
+              />
             </Animated.View>
           </ScrollView>
 
